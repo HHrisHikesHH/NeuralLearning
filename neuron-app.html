@@ -67,6 +67,11 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);width:100vw;
 .btn-primary:hover{background:linear-gradient(135deg,rgba(0,229,255,0.22),rgba(199,125,255,0.22));
   border-color:rgba(0,229,255,0.45);}
 .btn-primary:disabled{opacity:0.35;cursor:not-allowed;}
+.btn-secondary{width:100%;margin-top:10px;padding:11px 14px;border-radius:10px;border:1px solid var(--border);
+  background:transparent;color:var(--muted2);font-family:var(--mono);font-size:0.62rem;
+  letter-spacing:0.8px;cursor:pointer;transition:all 0.2s;text-transform:uppercase;}
+.btn-secondary:hover{border-color:rgba(0,229,255,0.3);color:var(--accent);
+  background:rgba(0,229,255,0.06);}
 
 /* ── SCREEN 2: PROMPT ── */
 #s-prompt{background:radial-gradient(ellipse at 70% 20%, rgba(199,125,255,0.04) 0%, transparent 60%);}
@@ -281,6 +286,7 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);width:100vw;
       </button>
     </div>
     <button class="btn-primary" id="go-prompt">Generate Knowledge Prompt →</button>
+    <button class="btn-secondary" id="go-json-direct">Already have JSON? Paste & visualize →</button>
   </div>
 </div>
 
@@ -292,19 +298,19 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);width:100vw;
     <div class="pw-hdr">
       <button class="pw-back" id="back-land">← Back</button>
       <div>
-        <div class="pw-title">Build map for <span id="pw-topic-name">—</span></div>
+        <div class="pw-title" id="pw-title">Build map for <span id="pw-topic-name">—</span></div>
       </div>
     </div>
 
     <div class="step-pills">
-      <div class="sp done">✓ Topic defined</div>
-      <div class="sp active">① Copy prompt</div>
+      <div class="sp done" id="pill-topic">✓ Topic defined</div>
+      <div class="sp active" id="pill-copy">① Copy prompt</div>
       <div class="sp" id="pill-paste">② Paste result</div>
       <div class="sp" id="pill-launch">③ Launch map</div>
     </div>
 
-    <div class="pw-section">
-      <div class="pw-sl">Step 1 — Copy this prompt into any AI (Claude, GPT, Gemini…)</div>
+    <div class="pw-section" id="copy-section">
+      <div class="pw-sl" id="copy-section-label">Step 1 — Copy this prompt into any AI (Claude, GPT, Gemini…)</div>
       <div class="prompt-box" id="gen-prompt"></div>
       <div class="copy-row">
         <button class="btn-copy" id="copy-btn">⎘ Copy Prompt</button>
@@ -320,7 +326,7 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);width:100vw;
     </div>
 
     <div class="pw-section">
-      <div class="pw-sl">Step 2 — Paste the JSON output here</div>
+      <div class="pw-sl" id="paste-section-label">Step 2 — Paste the JSON output here</div>
       <textarea class="paste-area" id="json-paste"
         placeholder="Paste the full JSON response from the AI here…"></textarea>
       <div id="val-msg"></div>
@@ -422,7 +428,8 @@ let appState = {
   depth: 'explorer',
   data: null,
   completedSteps: new Set(),
-  activeNode: null
+  activeNode: null,
+  fromJsonDirect: false
 };
 
 // ══════════════════════════════════════════
@@ -767,11 +774,20 @@ document.getElementById('go-prompt').addEventListener('click', () => {
     return;
   }
   appState.topic = topic;
+   appState.fromJsonDirect = false;
   goToPromptScreen();
 });
 
 document.getElementById('topic-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') document.getElementById('go-prompt').click();
+});
+
+// Allow jumping straight to JSON paste screen for users who already have a map
+document.getElementById('go-json-direct').addEventListener('click', () => {
+  // Use a generic label; actual topic will come from the pasted JSON
+  appState.topic = 'Custom JSON map';
+  appState.fromJsonDirect = true;
+  goToPromptScreen();
 });
 
 // ══════════════════════════════════════════
@@ -780,8 +796,41 @@ document.getElementById('topic-input').addEventListener('keydown', e => {
 function goToPromptScreen() {
   document.getElementById('s-land').classList.add('hidden');
   document.getElementById('s-prompt').classList.remove('hidden');
-  document.getElementById('pw-topic-name').textContent = `"${appState.topic}"`;
-  document.getElementById('gen-prompt').textContent = buildPrompt(appState.topic, appState.depth);
+  const titleEl = document.getElementById('pw-title');
+  const topicNameEl = document.getElementById('pw-topic-name');
+  topicNameEl.textContent = `"${appState.topic}"`;
+  const copySection = document.getElementById('copy-section');
+  const copyPill = document.getElementById('pill-copy');
+  const pastePill = document.getElementById('pill-paste');
+  const launchPill = document.getElementById('pill-launch');
+  const pasteLabel = document.getElementById('paste-section-label');
+
+  // Reset step pill states
+  copyPill.classList.remove('active');
+  pastePill.classList.remove('active');
+  launchPill.classList.remove('active');
+
+  if (appState.fromJsonDirect) {
+    // Hide header title and prompt copy step completely
+    if (titleEl) titleEl.style.display = 'none';
+    copySection.style.display = 'none';
+    copyPill.style.display = 'none';
+    pastePill.classList.add('active');
+    // Make paste label generic (no step number)
+    if (pasteLabel) pasteLabel.textContent = 'Paste the JSON output here';
+    // No prompt generation needed in this path
+    document.getElementById('gen-prompt').textContent = '';
+  } else {
+    // Show full 3-step flow and title
+    if (titleEl) titleEl.style.display = '';
+    copySection.style.display = '';
+    copyPill.style.display = '';
+    copyPill.classList.add('active');
+    pastePill.classList.remove('active');
+    if (pasteLabel) pasteLabel.textContent = 'Step 2 — Paste the JSON output here';
+    document.getElementById('gen-prompt').textContent = buildPrompt(appState.topic, appState.depth);
+  }
+
   document.getElementById('val-msg').style.display = 'none';
   document.getElementById('json-paste').value = '';
   document.getElementById('launch-btn').disabled = true;
