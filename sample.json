@@ -1,0 +1,2237 @@
+{
+    "topic": "buddhism",
+    "depth": "researcher",
+    "summary": "This knowledge graph of Buddhism reveals a vast interconnected web where core teachings like the Four Noble Truths serve as central hubs, pulling in philosophical concepts, practices, and historical developments; cross-domain bridges highlight surprising parallels to quantum physics, psychology, and Stoicism, while debates at the frontiers expose ongoing tensions between literal and metaphorical interpretations. The map's shape emphasizes semantic clusters around suffering and liberation, with distant nodes representing minority views and open questions, offering researchers novel connections across disciplines.",
+    "categories": [
+      {
+        "id": "core_teachings",
+        "label": "Core Teachings",
+        "color": "#4fc3f7",
+        "icon": "🧠",
+        "description": "Fundamental doctrines that anchor Buddhist understanding and practice."
+      },
+      {
+        "id": "philosophical_concepts",
+        "label": "Philosophical Concepts",
+        "color": "#c77dff",
+        "icon": "🤔",
+        "description": "Deep explorations of reality, mind, and existence in Buddhist thought."
+      },
+      {
+        "id": "meditation_practices",
+        "label": "Meditation Practices",
+        "color": "#69f0ae",
+        "icon": "🧘",
+        "description": "Techniques for cultivating insight, concentration, and compassion."
+      },
+      {
+        "id": "ethical_principles",
+        "label": "Ethical Principles",
+        "color": "#ff9a3c",
+        "icon": "⚖️",
+        "description": "Moral guidelines shaping conduct and interpersonal relations."
+      },
+      {
+        "id": "schools_traditions",
+        "label": "Schools & Traditions",
+        "color": "#ffb74d",
+        "icon": "🏫",
+        "description": "Diverse interpretations and branches evolving from original teachings."
+      },
+      {
+        "id": "historical_development",
+        "label": "Historical Development",
+        "color": "#00e5ff",
+        "icon": "📜",
+        "description": "Evolution and global spread of Buddhism through time."
+      },
+      {
+        "id": "cosmology_metaphysics",
+        "label": "Cosmology & Metaphysics",
+        "color": "#9c64ff",
+        "icon": "🌌",
+        "description": "Views on the universe, realms, and ultimate nature of being."
+      },
+      {
+        "id": "cross_domain_analogs",
+        "label": "Cross-Domain Analogs",
+        "color": "#f48fb1",
+        "icon": "🔗",
+        "description": "Parallels to concepts in science, philosophy, and other fields."
+      },
+      {
+        "id": "debates_frontiers",
+        "label": "Debates & Frontiers",
+        "color": "#ff6b6b",
+        "icon": "❓",
+        "description": "Controversies, minority views, and unresolved questions in Buddhism."
+      }
+    ],
+    "nodes": [
+      {
+        "id": "buddha",
+        "label": "The Buddha",
+        "category": "historical_development",
+        "hot": true,
+        "depth_level": 1,
+        "description": "Siddhartha Gautama's life exemplifies the path to enlightenment, showing how ordinary humans can transcend suffering through insight.",
+        "prerequisites": []
+      },
+      {
+        "id": "four_noble_truths",
+        "label": "Four Noble Truths",
+        "category": "core_teachings",
+        "hot": true,
+        "depth_level": 1,
+        "description": "The foundational framework diagnosing suffering and prescribing its end, essential for grasping Buddhism's problem-solving approach to life."
+      },
+      {
+        "id": "dukkha",
+        "label": "Dukkha",
+        "category": "philosophical_concepts",
+        "hot": false,
+        "depth_level": 1,
+        "description": "The inherent unsatisfactoriness of existence drives the quest for liberation, reminding us why temporary pleasures fail to fulfill.",
+        "prerequisites": [
+          "four_noble_truths"
+        ]
+      },
+      {
+        "id": "samudaya",
+        "label": "Samudaya",
+        "category": "philosophical_concepts",
+        "hot": false,
+        "depth_level": 2,
+        "description": "Craving as the root of suffering explains why desires perpetuate cycles of dissatisfaction in Buddhist analysis.",
+        "prerequisites": [
+          "dukkha"
+        ]
+      },
+      {
+        "id": "nirodha",
+        "label": "Nirodha",
+        "category": "philosophical_concepts",
+        "hot": false,
+        "depth_level": 2,
+        "description": "Cessation of craving leads to peace, highlighting Buddhism's optimistic view that suffering can be fully eradicated.",
+        "prerequisites": [
+          "samudaya"
+        ]
+      },
+      {
+        "id": "magga",
+        "label": "Magga",
+        "category": "core_teachings",
+        "hot": false,
+        "depth_level": 1,
+        "description": "The path to ending suffering provides a practical roadmap, integrating wisdom, ethics, and meditation.",
+        "prerequisites": [
+          "nirodha"
+        ]
+      },
+      {
+        "id": "noble_eightfold_path",
+        "label": "Noble Eightfold Path",
+        "category": "core_teachings",
+        "hot": true,
+        "depth_level": 1,
+        "description": "Holistic guide to ethical living and mental cultivation that transforms ordinary actions into steps toward enlightenment.",
+        "prerequisites": [
+          "four_noble_truths"
+        ]
+      },
+      {
+        "id": "right_view",
+        "label": "Right View",
+        "category": "ethical_principles",
+        "hot": false,
+        "depth_level": 1,
+        "description": "Seeing reality without distortion is crucial, as it aligns all other path elements in Buddhist practice.",
+        "prerequisites": [
+          "noble_eightfold_path"
+        ]
+      },
+      {
+        "id": "right_intention",
+        "label": "Right Intention",
+        "category": "ethical_principles",
+        "hot": false,
+        "depth_level": 1,
+        "description": "Cultivating intentions of renunciation and goodwill prevents harmful actions from arising.",
+        "prerequisites": [
+          "right_view"
+        ]
+      },
+      {
+        "id": "right_speech",
+        "label": "Right Speech",
+        "category": "ethical_principles",
+        "hot": false,
+        "depth_level": 1,
+        "description": "Harmonious communication builds community, reflecting Buddhism's emphasis on relational ethics.",
+        "prerequisites": [
+          "right_intention"
+        ]
+      },
+      {
+        "id": "right_action",
+        "label": "Right Action",
+        "category": "ethical_principles",
+        "hot": false,
+        "depth_level": 1,
+        "description": "Ethical conduct in deeds protects oneself and others, forming the moral foundation of the path.",
+        "prerequisites": [
+          "right_speech"
+        ]
+      },
+      {
+        "id": "right_livelihood",
+        "label": "Right Livelihood",
+        "category": "ethical_principles",
+        "hot": false,
+        "depth_level": 2,
+        "description": "Earning a living without harm integrates spirituality into daily work, avoiding exploitation.",
+        "prerequisites": [
+          "right_action"
+        ]
+      },
+      {
+        "id": "right_effort",
+        "label": "Right Effort",
+        "category": "ethical_principles",
+        "hot": false,
+        "depth_level": 1,
+        "description": "Diligent cultivation of wholesome states sustains progress on the path.",
+        "prerequisites": [
+          "right_livelihood"
+        ]
+      },
+      {
+        "id": "right_mindfulness",
+        "label": "Right Mindfulness",
+        "category": "meditation_practices",
+        "hot": true,
+        "depth_level": 1,
+        "description": "Aware presence in the moment uncovers hidden patterns of mind, key to insight.",
+        "prerequisites": [
+          "right_effort"
+        ]
+      },
+      {
+        "id": "right_concentration",
+        "label": "Right Concentration",
+        "category": "meditation_practices",
+        "hot": false,
+        "depth_level": 1,
+        "description": "Focused meditation stabilizes the mind, enabling deep penetration into reality.",
+        "prerequisites": [
+          "right_mindfulness"
+        ]
+      },
+      {
+        "id": "dependent_origination",
+        "label": "Dependent Origination",
+        "category": "philosophical_concepts",
+        "hot": true,
+        "depth_level": 2,
+        "description": "Interlinked causes of existence reveal no independent self, explaining cyclic suffering.",
+        "prerequisites": [
+          "four_noble_truths"
+        ]
+      },
+      {
+        "id": "karma",
+        "label": "Karma",
+        "category": "cosmology_metaphysics",
+        "hot": true,
+        "depth_level": 1,
+        "description": "Intentional actions shape future experiences, underscoring personal responsibility in Buddhism.",
+        "prerequisites": [
+          "dependent_origination"
+        ]
+      },
+      {
+        "id": "rebirth",
+        "label": "Rebirth",
+        "category": "cosmology_metaphysics",
+        "hot": false,
+        "depth_level": 2,
+        "description": "Continuation of consciousness across lives driven by karma, motivating ethical behavior.",
+        "prerequisites": [
+          "karma"
+        ]
+      },
+      {
+        "id": "nirvana",
+        "label": "Nirvana",
+        "category": "cosmology_metaphysics",
+        "hot": true,
+        "depth_level": 1,
+        "description": "Ultimate freedom from suffering's cycle, the goal that makes Buddhism transformative.",
+        "prerequisites": [
+          "nirodha"
+        ]
+      },
+      {
+        "id": "three_marks_existence",
+        "label": "Three Marks of Existence",
+        "category": "philosophical_concepts",
+        "hot": true,
+        "depth_level": 1,
+        "description": "Impermanence, suffering, and no-self characterize all phenomena, shattering illusions.",
+        "prerequisites": [
+          "dukkha"
+        ]
+      },
+      {
+        "id": "anicca",
+        "label": "Anicca",
+        "category": "philosophical_concepts",
+        "hot": false,
+        "depth_level": 1,
+        "description": "Everything changes constantly, teaching why attachment leads to pain in Buddhist view.",
+        "prerequisites": [
+          "three_marks_existence"
+        ]
+      },
+      {
+        "id": "anatta",
+        "label": "Anatta",
+        "category": "philosophical_concepts",
+        "hot": true,
+        "depth_level": 2,
+        "description": "No permanent self exists, liberating from ego-centric suffering.",
+        "prerequisites": [
+          "three_marks_existence"
+        ]
+      },
+      {
+        "id": "sunyata",
+        "label": "Sunyata",
+        "category": "philosophical_concepts",
+        "hot": true,
+        "depth_level": 3,
+        "description": "Emptiness of inherent existence reveals interdependent reality, core to Mahayana insight.",
+        "prerequisites": [
+          "dependent_origination",
+          "anatta"
+        ]
+      },
+      {
+        "id": "middle_way",
+        "label": "Middle Way",
+        "category": "philosophical_concepts",
+        "hot": false,
+        "depth_level": 1,
+        "description": "Avoiding extremes of indulgence and asceticism, balancing for true understanding.",
+        "prerequisites": [
+          "buddha"
+        ]
+      },
+      {
+        "id": "two_truths",
+        "label": "Two Truths",
+        "category": "philosophical_concepts",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Conventional and ultimate realities coexist, navigating apparent contradictions in advanced Buddhism.",
+        "prerequisites": [
+          "sunyata"
+        ]
+      },
+      {
+        "id": "bodhisattva",
+        "label": "Bodhisattva",
+        "category": "ethical_principles",
+        "hot": false,
+        "depth_level": 2,
+        "description": "Being who vows to aid all sentient beings, embodying compassion in Mahayana.",
+        "prerequisites": [
+          "mahayana"
+        ]
+      },
+      {
+        "id": "arhat",
+        "label": "Arhat",
+        "category": "cosmology_metaphysics",
+        "hot": false,
+        "depth_level": 2,
+        "description": "Enlightened one who attains nirvana, ideal in Theravada tradition.",
+        "prerequisites": [
+          "theravada"
+        ]
+      },
+      {
+        "id": "theravada",
+        "label": "Theravada",
+        "category": "schools_traditions",
+        "hot": false,
+        "depth_level": 2,
+        "description": "Elder school focusing on original teachings and monastic discipline for personal liberation.",
+        "prerequisites": [
+          "historical_development_first_council"
+        ]
+      },
+      {
+        "id": "mahayana",
+        "label": "Mahayana",
+        "category": "schools_traditions",
+        "hot": true,
+        "depth_level": 2,
+        "description": "Great Vehicle emphasizing universal salvation and bodhisattva path.",
+        "prerequisites": [
+          "theravada"
+        ]
+      },
+      {
+        "id": "vajrayana",
+        "label": "Vajrayana",
+        "category": "schools_traditions",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Diamond Vehicle using tantric methods for rapid enlightenment in Tibetan context.",
+        "prerequisites": [
+          "mahayana"
+        ]
+      },
+      {
+        "id": "zen",
+        "label": "Zen",
+        "category": "schools_traditions",
+        "hot": false,
+        "depth_level": 2,
+        "description": "Chan tradition stressing direct insight through meditation and koans.",
+        "prerequisites": [
+          "mahayana"
+        ]
+      },
+      {
+        "id": "tibetan_buddhism",
+        "label": "Tibetan Buddhism",
+        "category": "schools_traditions",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Integrates Vajrayana with shamanic elements, featuring lamas and mandalas.",
+        "prerequisites": [
+          "vajrayana"
+        ]
+      },
+      {
+        "id": "abhidhamma",
+        "label": "Abhidhamma",
+        "category": "schools_traditions",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Analytical psychology and philosophy in Theravada, dissecting mind and matter.",
+        "prerequisites": [
+          "theravada"
+        ]
+      },
+      {
+        "id": "prajnaparamita",
+        "label": "Prajnaparamita",
+        "category": "schools_traditions",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Perfection of wisdom sutras emphasizing emptiness in Mahayana.",
+        "prerequisites": [
+          "mahayana"
+        ]
+      },
+      {
+        "id": "madhyamaka",
+        "label": "Madhyamaka",
+        "category": "schools_traditions",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Middle Way school using dialectics to reveal emptiness, founded by Nagarjuna.",
+        "prerequisites": [
+          "sunyata"
+        ]
+      },
+      {
+        "id": "yogacara",
+        "label": "Yogacara",
+        "category": "schools_traditions",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Mind-only school exploring consciousness and perception.",
+        "prerequisites": [
+          "mahayana"
+        ]
+      },
+      {
+        "id": "tathagatagarbha",
+        "label": "Tathagatagarbha",
+        "category": "philosophical_concepts",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Buddha-nature inherent in all beings, basis for enlightenment potential.",
+        "prerequisites": [
+          "sunyata"
+        ]
+      },
+      {
+        "id": "huayan",
+        "label": "Huayan",
+        "category": "schools_traditions",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Chinese school viewing all phenomena as interpenetrating.",
+        "prerequisites": [
+          "mahayana"
+        ]
+      },
+      {
+        "id": "tiantai",
+        "label": "Tiantai",
+        "category": "schools_traditions",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Integrated teachings harmonizing diverse doctrines.",
+        "prerequisites": [
+          "mahayana"
+        ]
+      },
+      {
+        "id": "vipassana",
+        "label": "Vipassana",
+        "category": "meditation_practices",
+        "hot": false,
+        "depth_level": 2,
+        "description": "Insight meditation observing impermanence to realize truth.",
+        "prerequisites": [
+          "right_mindfulness"
+        ]
+      },
+      {
+        "id": "samatha",
+        "label": "Samatha",
+        "category": "meditation_practices",
+        "hot": false,
+        "depth_level": 2,
+        "description": "Calming meditation building concentration for deeper practice.",
+        "prerequisites": [
+          "right_concentration"
+        ]
+      },
+      {
+        "id": "metta",
+        "label": "Metta",
+        "category": "meditation_practices",
+        "hot": false,
+        "depth_level": 2,
+        "description": "Loving-kindness cultivation fostering compassion toward all.",
+        "prerequisites": [
+          "brahmaviharas"
+        ]
+      },
+      {
+        "id": "five_precepts",
+        "label": "Five Precepts",
+        "category": "ethical_principles",
+        "hot": false,
+        "depth_level": 1,
+        "description": "Basic ethical vows reducing harm, essential for lay practitioners.",
+        "prerequisites": [
+          "right_action"
+        ]
+      },
+      {
+        "id": "brahmaviharas",
+        "label": "Brahmaviharas",
+        "category": "ethical_principles",
+        "hot": false,
+        "depth_level": 2,
+        "description": "Divine abodes of loving-kindness, compassion, joy, equanimity.",
+        "prerequisites": [
+          "metta"
+        ]
+      },
+      {
+        "id": "six_realms",
+        "label": "Six Realms",
+        "category": "cosmology_metaphysics",
+        "hot": false,
+        "depth_level": 2,
+        "description": "Cycles of rebirth reflecting mental states, illustrating karma's effects.",
+        "prerequisites": [
+          "rebirth"
+        ]
+      },
+      {
+        "id": "historical_development_first_council",
+        "label": "First Buddhist Council",
+        "category": "historical_development",
+        "hot": false,
+        "depth_level": 2,
+        "description": "Post-Buddha assembly standardizing teachings, marking organized tradition.",
+        "prerequisites": [
+          "buddha"
+        ]
+      },
+      {
+        "id": "spread_to_asia",
+        "label": "Spread to Asia",
+        "category": "historical_development",
+        "hot": false,
+        "depth_level": 2,
+        "description": "Buddhism's expansion adapting to cultures, influencing art and society.",
+        "prerequisites": [
+          "historical_development_first_council"
+        ]
+      },
+      {
+        "id": "modern_buddhism",
+        "label": "Modern Buddhism",
+        "category": "historical_development",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Contemporary adaptations integrating science and secularism.",
+        "prerequisites": [
+          "spread_to_asia"
+        ]
+      },
+      {
+        "id": "secular_buddhism",
+        "label": "Secular Buddhism",
+        "category": "debates_frontiers",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Non-religious approach focusing on ethics and meditation, debated for authenticity.",
+        "prerequisites": [
+          "modern_buddhism"
+        ]
+      },
+      {
+        "id": "debates_on_rebirth",
+        "label": "Debates on Rebirth",
+        "category": "debates_frontiers",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Literal vs metaphorical interpretations challenge traditional cosmology in modern contexts.",
+        "prerequisites": [
+          "rebirth"
+        ]
+      },
+      {
+        "id": "rangtong_vs_shentong",
+        "label": "Rangtong vs Shentong",
+        "category": "debates_frontiers",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Emptiness debates in Tibetan schools on ultimate reality's nature.",
+        "prerequisites": [
+          "sunyata"
+        ]
+      },
+      {
+        "id": "nagarjuna_influence",
+        "label": "Nagarjuna's Influence",
+        "category": "historical_development",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Founder of Madhyamaka whose dialectics shaped Mahayana philosophy.",
+        "prerequisites": [
+          "madhyamaka"
+        ]
+      },
+      {
+        "id": "stoic_apatheia",
+        "label": "Stoic Apatheia",
+        "category": "cross_domain_analogs",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Stoic freedom from passions mirrors Buddhist non-attachment, promoting resilience.",
+        "prerequisites": [
+          "non_attachment"
+        ]
+      },
+      {
+        "id": "quantum_entanglement",
+        "label": "Quantum Entanglement",
+        "category": "cross_domain_analogs",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Linked particles defy independence, akin to Buddhist interdependence.",
+        "prerequisites": [
+          "dependent_origination"
+        ]
+      },
+      {
+        "id": "thermodynamic_entropy",
+        "label": "Thermodynamic Entropy",
+        "category": "cross_domain_analogs",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Natural drift to disorder parallels impermanence, explaining system's decay.",
+        "prerequisites": [
+          "anicca"
+        ]
+      },
+      {
+        "id": "mindfulness_psychology",
+        "label": "Mindfulness in Psychology",
+        "category": "cross_domain_analogs",
+        "hot": false,
+        "depth_level": 2,
+        "description": "Therapeutic tool for stress reduction, borrowed from Buddhist practice.",
+        "prerequisites": [
+          "right_mindfulness"
+        ]
+      },
+      {
+        "id": "systems_interdependence",
+        "label": "Systems Theory Interdependence",
+        "category": "cross_domain_analogs",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Holistic connections in complex systems echo dependent origination.",
+        "prerequisites": [
+          "dependent_origination"
+        ]
+      },
+      {
+        "id": "existential_psychology",
+        "label": "Existential Psychology",
+        "category": "cross_domain_analogs",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Search for meaning amid absurdity resonates with dukkha and path.",
+        "prerequisites": [
+          "dukkha"
+        ]
+      },
+      {
+        "id": "phenomenological_psychology",
+        "label": "Phenomenological Psychology",
+        "category": "cross_domain_analogs",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Focus on lived experience aligns with Buddhist analysis of consciousness.",
+        "prerequisites": [
+          "abhidhamma"
+        ]
+      },
+      {
+        "id": "cognitive_psychology",
+        "label": "Cognitive Psychology",
+        "category": "cross_domain_analogs",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Mental processes and biases parallel Abhidhamma's mind factors.",
+        "prerequisites": [
+          "abhidhamma"
+        ]
+      },
+      {
+        "id": "stoic_cosmo_politanism",
+        "label": "Stoic Cosmopolitanism",
+        "category": "cross_domain_analogs",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Universal citizenship mirrors Buddhist compassion for all beings.",
+        "prerequisites": [
+          "bodhisattva"
+        ]
+      },
+      {
+        "id": "information_uncertainty",
+        "label": "Information Uncertainty",
+        "category": "cross_domain_analogs",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Shannon's entropy as unpredictability akin to dukkha's instability.",
+        "prerequisites": [
+          "dukkha"
+        ]
+      },
+      {
+        "id": "quantum_superposition",
+        "label": "Quantum Superposition",
+        "category": "cross_domain_analogs",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Multiple states until observed, similar to emptiness before conceptualization.",
+        "prerequisites": [
+          "sunyata"
+        ]
+      },
+      {
+        "id": "humanistic_psychology",
+        "label": "Humanistic Psychology",
+        "category": "cross_domain_analogs",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Self-actualization echoes Buddha-nature realization.",
+        "prerequisites": [
+          "tathagatagarbha"
+        ]
+      },
+      {
+        "id": "psychoanalytical_self",
+        "label": "Psychoanalytical Self",
+        "category": "cross_domain_analogs",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Freudian ego dynamics contrast yet inform anatta's no-self.",
+        "prerequisites": [
+          "anatta"
+        ]
+      },
+      {
+        "id": "non_attachment",
+        "label": "Non-Attachment",
+        "category": "philosophical_concepts",
+        "hot": false,
+        "depth_level": 2,
+        "description": "Releasing clinging reduces suffering, central to emotional freedom in Buddhism.",
+        "prerequisites": [
+          "samudaya"
+        ]
+      },
+      {
+        "id": "compassion",
+        "label": "Compassion",
+        "category": "ethical_principles",
+        "hot": false,
+        "depth_level": 1,
+        "description": "Active wish to alleviate suffering, bridging personal and universal ethics.",
+        "prerequisites": [
+          "brahmaviharas"
+        ]
+      },
+      {
+        "id": "dharma",
+        "label": "Dharma",
+        "category": "core_teachings",
+        "hot": false,
+        "depth_level": 1,
+        "description": "Teachings as universal truth, guiding practitioners toward reality.",
+        "prerequisites": [
+          "buddha"
+        ]
+      },
+      {
+        "id": "sangha",
+        "label": "Sangha",
+        "category": "ethical_principles",
+        "hot": false,
+        "depth_level": 1,
+        "description": "Community of practitioners supporting mutual growth and preservation of teachings.",
+        "prerequisites": [
+          "buddha"
+        ]
+      },
+      {
+        "id": "jhana_states",
+        "label": "Jhana States",
+        "category": "meditation_practices",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Absorptive concentrations in meditation, preparatory for insight.",
+        "prerequisites": [
+          "samatha"
+        ]
+      },
+      {
+        "id": "koan_practice",
+        "label": "Koan Practice",
+        "category": "meditation_practices",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Zen riddles breaking conceptual thinking for direct realization.",
+        "prerequisites": [
+          "zen"
+        ]
+      },
+      {
+        "id": "tantric_methods",
+        "label": "Tantric Methods",
+        "category": "meditation_practices",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Esoteric techniques transforming energies for enlightenment.",
+        "prerequisites": [
+          "vajrayana"
+        ]
+      },
+      {
+        "id": "mind_only",
+        "label": "Mind-Only",
+        "category": "philosophical_concepts",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Yogacara view that reality is consciousness-manifested, challenging materialism.",
+        "prerequisites": [
+          "yogacara"
+        ]
+      },
+      {
+        "id": "interpenetration",
+        "label": "Interpenetration",
+        "category": "philosophical_concepts",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Huayan mutual containment of phenomena, illustrating unity.",
+        "prerequisites": [
+          "huayan"
+        ]
+      },
+      {
+        "id": "three_bodies_buddha",
+        "label": "Three Bodies of Buddha",
+        "category": "cosmology_metaphysics",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Dharmakaya, Sambhogakaya, Nirmanakaya explaining Buddha's manifestations.",
+        "prerequisites": [
+          "mahayana"
+        ]
+      },
+      {
+        "id": "bardo_states",
+        "label": "Bardo States",
+        "category": "cosmology_metaphysics",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Intermediate realms between death and rebirth in Tibetan view.",
+        "prerequisites": [
+          "tibetan_buddhism"
+        ]
+      },
+      {
+        "id": "minority_views_self",
+        "label": "Minority Views on Self",
+        "category": "debates_frontiers",
+        "hot": false,
+        "depth_level": 3,
+        "description": "Pudgalavada's personal identity theory, rejected by mainstream but historically significant.",
+        "prerequisites": [
+          "anatta"
+        ]
+      },
+      {
+        "id": "open_questions_consciousness",
+        "label": "Open Questions on Consciousness",
+        "category": "debates_frontiers",
+        "hot": false,
+        "depth_level": 3,
+        "description": "How consciousness arises debated in Abhidhamma and modern neuroscience interfaces.",
+        "prerequisites": [
+          "abhidhamma"
+        ]
+      },
+      {
+        "id": "dead_ends_sarvasti_vada",
+        "label": "Sarvastivada Dead-Ends",
+        "category": "debates_frontiers",
+        "hot": false,
+        "depth_level": 3,
+        "description": "All times exist theory, critiqued and abandoned in later schools.",
+        "prerequisites": [
+          "abhidhamma"
+        ]
+      }
+    ],
+    "links": [
+      {
+        "source": "dukkha",
+        "target": "four_noble_truths",
+        "relation": "is_a_type_of",
+        "type": "hierarchical",
+        "weight": 3,
+        "label": "first truth component"
+      },
+      {
+        "source": "samudaya",
+        "target": "four_noble_truths",
+        "relation": "is_a_type_of",
+        "type": "hierarchical",
+        "weight": 3
+      },
+      {
+        "source": "nirodha",
+        "target": "four_noble_truths",
+        "relation": "is_a_type_of",
+        "type": "hierarchical",
+        "weight": 3
+      },
+      {
+        "source": "magga",
+        "target": "four_noble_truths",
+        "relation": "is_a_type_of",
+        "type": "hierarchical",
+        "weight": 3
+      },
+      {
+        "source": "noble_eightfold_path",
+        "target": "magga",
+        "relation": "is_applied_as",
+        "type": "semantic",
+        "weight": 3
+      },
+      {
+        "source": "right_view",
+        "target": "noble_eightfold_path",
+        "relation": "feeds_into",
+        "type": "hierarchical",
+        "weight": 2
+      },
+      {
+        "source": "right_intention",
+        "target": "noble_eightfold_path",
+        "relation": "feeds_into",
+        "type": "hierarchical",
+        "weight": 2
+      },
+      {
+        "source": "right_speech",
+        "target": "noble_eightfold_path",
+        "relation": "feeds_into",
+        "type": "hierarchical",
+        "weight": 2
+      },
+      {
+        "source": "right_action",
+        "target": "noble_eightfold_path",
+        "relation": "feeds_into",
+        "type": "hierarchical",
+        "weight": 2
+      },
+      {
+        "source": "right_livelihood",
+        "target": "noble_eightfold_path",
+        "relation": "feeds_into",
+        "type": "hierarchical",
+        "weight": 2
+      },
+      {
+        "source": "right_effort",
+        "target": "noble_eightfold_path",
+        "relation": "feeds_into",
+        "type": "hierarchical",
+        "weight": 2
+      },
+      {
+        "source": "right_mindfulness",
+        "target": "noble_eightfold_path",
+        "relation": "feeds_into",
+        "type": "hierarchical",
+        "weight": 2
+      },
+      {
+        "source": "right_concentration",
+        "target": "noble_eightfold_path",
+        "relation": "feeds_into",
+        "type": "hierarchical",
+        "weight": 2
+      },
+      {
+        "source": "dependent_origination",
+        "target": "samudaya",
+        "relation": "enables",
+        "type": "semantic",
+        "weight": 2
+      },
+      {
+        "source": "karma",
+        "target": "dependent_origination",
+        "relation": "emerges_from",
+        "type": "semantic",
+        "weight": 2
+      },
+      {
+        "source": "rebirth",
+        "target": "karma",
+        "relation": "emerges_from",
+        "type": "semantic",
+        "weight": 2
+      },
+      {
+        "source": "nirvana",
+        "target": "nirodha",
+        "relation": "is_applied_as",
+        "type": "semantic",
+        "weight": 3
+      },
+      {
+        "source": "anicca",
+        "target": "three_marks_existence",
+        "relation": "is_a_type_of",
+        "type": "hierarchical",
+        "weight": 3
+      },
+      {
+        "source": "dukkha",
+        "target": "three_marks_existence",
+        "relation": "is_a_type_of",
+        "type": "hierarchical",
+        "weight": 3
+      },
+      {
+        "source": "anatta",
+        "target": "three_marks_existence",
+        "relation": "is_a_type_of",
+        "type": "hierarchical",
+        "weight": 3
+      },
+      {
+        "source": "sunyata",
+        "target": "anatta",
+        "relation": "historically_led_to",
+        "type": "semantic",
+        "weight": 2
+      },
+      {
+        "source": "middle_way",
+        "target": "buddha",
+        "relation": "emerges_from",
+        "type": "semantic",
+        "weight": 2
+      },
+      {
+        "source": "two_truths",
+        "target": "sunyata",
+        "relation": "enables",
+        "type": "semantic",
+        "weight": 2
+      },
+      {
+        "source": "bodhisattva",
+        "target": "mahayana",
+        "relation": "is_applied_as",
+        "type": "semantic",
+        "weight": 3
+      },
+      {
+        "source": "arhat",
+        "target": "theravada",
+        "relation": "is_applied_as",
+        "type": "semantic",
+        "weight": 3
+      },
+      {
+        "source": "theravada",
+        "target": "buddha",
+        "relation": "historically_led_to",
+        "type": "hierarchical",
+        "weight": 1
+      },
+      {
+        "source": "mahayana",
+        "target": "theravada",
+        "relation": "contrasts_with",
+        "type": "semantic",
+        "weight": 2
+      },
+      {
+        "source": "vajrayana",
+        "target": "mahayana",
+        "relation": "historically_led_to",
+        "type": "hierarchical",
+        "weight": 2
+      },
+      {
+        "source": "zen",
+        "target": "mahayana",
+        "relation": "is_a_type_of",
+        "type": "hierarchical",
+        "weight": 2
+      },
+      {
+        "source": "tibetan_buddhism",
+        "target": "vajrayana",
+        "relation": "is_applied_as",
+        "type": "semantic",
+        "weight": 2
+      },
+      {
+        "source": "abhidhamma",
+        "target": "theravada",
+        "relation": "feeds_into",
+        "type": "semantic",
+        "weight": 2
+      },
+      {
+        "source": "prajnaparamita",
+        "target": "mahayana",
+        "relation": "feeds_into",
+        "type": "semantic",
+        "weight": 2
+      },
+      {
+        "source": "madhyamaka",
+        "target": "sunyata",
+        "relation": "is_applied_as",
+        "type": "semantic",
+        "weight": 3
+      },
+      {
+        "source": "yogacara",
+        "target": "mahayana",
+        "relation": "is_a_type_of",
+        "type": "hierarchical",
+        "weight": 2
+      },
+      {
+        "source": "tathagatagarbha",
+        "target": "mahayana",
+        "relation": "feeds_into",
+        "type": "semantic",
+        "weight": 2
+      },
+      {
+        "source": "huayan",
+        "target": "mahayana",
+        "relation": "is_a_type_of",
+        "type": "hierarchical",
+        "weight": 2
+      },
+      {
+        "source": "tiantai",
+        "target": "mahayana",
+        "relation": "is_a_type_of",
+        "type": "hierarchical",
+        "weight": 2
+      },
+      {
+        "source": "vipassana",
+        "target": "right_mindfulness",
+        "relation": "is_applied_as",
+        "type": "semantic",
+        "weight": 3
+      },
+      {
+        "source": "samatha",
+        "target": "right_concentration",
+        "relation": "is_applied_as",
+        "type": "semantic",
+        "weight": 3
+      },
+      {
+        "source": "metta",
+        "target": "brahmaviharas",
+        "relation": "is_a_type_of",
+        "type": "hierarchical",
+        "weight": 3
+      },
+      {
+        "source": "five_precepts",
+        "target": "right_action",
+        "relation": "is_applied_as",
+        "type": "semantic",
+        "weight": 2
+      },
+      {
+        "source": "six_realms",
+        "target": "rebirth",
+        "relation": "emerges_from",
+        "type": "semantic",
+        "weight": 2
+      },
+      {
+        "source": "historical_development_first_council",
+        "target": "buddha",
+        "relation": "historically_led_to",
+        "type": "semantic",
+        "weight": 1
+      },
+      {
+        "source": "spread_to_asia",
+        "target": "historical_development_first_council",
+        "relation": "historically_led_to",
+        "type": "semantic",
+        "weight": 1
+      },
+      {
+        "source": "modern_buddhism",
+        "target": "spread_to_asia",
+        "relation": "historically_led_to",
+        "type": "semantic",
+        "weight": 1
+      },
+      {
+        "source": "secular_buddhism",
+        "target": "modern_buddhism",
+        "relation": "emerges_from",
+        "type": "semantic",
+        "weight": 2
+      },
+      {
+        "source": "debates_on_rebirth",
+        "target": "rebirth",
+        "relation": "is_often_confused_with",
+        "type": "semantic",
+        "weight": 2
+      },
+      {
+        "source": "rangtong_vs_shentong",
+        "target": "sunyata",
+        "relation": "contrasts_with",
+        "type": "semantic",
+        "weight": 2
+      },
+      {
+        "source": "nagarjuna_influence",
+        "target": "madhyamaka",
+        "relation": "historically_led_to",
+        "type": "semantic",
+        "weight": 3
+      },
+      {
+        "source": "non_attachment",
+        "target": "stoic_apatheia",
+        "relation": "is_analog_of",
+        "type": "cross_domain",
+        "weight": 2,
+        "label": "emotional equanimity"
+      },
+      {
+        "source": "dependent_origination",
+        "target": "quantum_entanglement",
+        "relation": "shares_structure_with",
+        "type": "cross_domain",
+        "weight": 2,
+        "label": "relational existence"
+      },
+      {
+        "source": "anicca",
+        "target": "thermodynamic_entropy",
+        "relation": "is_analog_of",
+        "type": "cross_domain",
+        "weight": 2,
+        "label": "decay toward chaos"
+      },
+      {
+        "source": "right_mindfulness",
+        "target": "mindfulness_psychology",
+        "relation": "is_applied_as",
+        "type": "cross_domain",
+        "weight": 2
+      },
+      {
+        "source": "dependent_origination",
+        "target": "systems_interdependence",
+        "relation": "shares_structure_with",
+        "type": "cross_domain",
+        "weight": 2
+      },
+      {
+        "source": "dukkha",
+        "target": "existential_psychology",
+        "relation": "is_analog_of",
+        "type": "cross_domain",
+        "weight": 1
+      },
+      {
+        "source": "abhidhamma",
+        "target": "phenomenological_psychology",
+        "relation": "shares_structure_with",
+        "type": "cross_domain",
+        "weight": 2
+      },
+      {
+        "source": "abhidhamma",
+        "target": "cognitive_psychology",
+        "relation": "is_analog_of",
+        "type": "cross_domain",
+        "weight": 2
+      },
+      {
+        "source": "bodhisattva",
+        "target": "stoic_cosmo_politanism",
+        "relation": "is_analog_of",
+        "type": "cross_domain",
+        "weight": 1
+      },
+      {
+        "source": "dukkha",
+        "target": "information_uncertainty",
+        "relation": "shares_structure_with",
+        "type": "cross_domain",
+        "weight": 1
+      },
+      {
+        "source": "sunyata",
+        "target": "quantum_superposition",
+        "relation": "is_analog_of",
+        "type": "cross_domain",
+        "weight": 2
+      },
+      {
+        "source": "tathagatagarbha",
+        "target": "humanistic_psychology",
+        "relation": "is_analog_of",
+        "type": "cross_domain",
+        "weight": 1
+      },
+      {
+        "source": "anatta",
+        "target": "psychoanalytical_self",
+        "relation": "contrasts_with",
+        "type": "cross_domain",
+        "weight": 2
+      },
+      {
+        "source": "non_attachment",
+        "target": "samudaya",
+        "relation": "is_the_inverse_of",
+        "type": "semantic",
+        "weight": 2
+      },
+      {
+        "source": "compassion",
+        "target": "bodhisattva",
+        "relation": "enables",
+        "type": "semantic",
+        "weight": 2
+      },
+      {
+        "source": "dharma",
+        "target": "four_noble_truths",
+        "relation": "feeds_into",
+        "type": "semantic",
+        "weight": 2
+      },
+      {
+        "source": "sangha",
+        "target": "five_precepts",
+        "relation": "enables",
+        "type": "semantic",
+        "weight": 1
+      },
+      {
+        "source": "jhana_states",
+        "target": "samatha",
+        "relation": "emerges_from",
+        "type": "semantic",
+        "weight": 3
+      },
+      {
+        "source": "koan_practice",
+        "target": "zen",
+        "relation": "is_applied_as",
+        "type": "semantic",
+        "weight": 3
+      },
+      {
+        "source": "tantric_methods",
+        "target": "vajrayana",
+        "relation": "is_applied_as",
+        "type": "semantic",
+        "weight": 3
+      },
+      {
+        "source": "mind_only",
+        "target": "yogacara",
+        "relation": "feeds_into",
+        "type": "semantic",
+        "weight": 3
+      },
+      {
+        "source": "interpenetration",
+        "target": "huayan",
+        "relation": "emerges_from",
+        "type": "semantic",
+        "weight": 3
+      },
+      {
+        "source": "three_bodies_buddha",
+        "target": "mahayana",
+        "relation": "feeds_into",
+        "type": "semantic",
+        "weight": 2
+      },
+      {
+        "source": "bardo_states",
+        "target": "rebirth",
+        "relation": "feeds_into",
+        "type": "semantic",
+        "weight": 2
+      },
+      {
+        "source": "minority_views_self",
+        "target": "anatta",
+        "relation": "contrasts_with",
+        "type": "semantic",
+        "weight": 2
+      },
+      {
+        "source": "open_questions_consciousness",
+        "target": "abhidhamma",
+        "relation": "emerges_from",
+        "type": "semantic",
+        "weight": 1
+      },
+      {
+        "source": "dead_ends_sarvasti_vada",
+        "target": "abhidhamma",
+        "relation": "historically_led_to",
+        "type": "semantic",
+        "weight": 1
+      },
+      {
+        "source": "sunyata",
+        "target": "nagarjuna_influence",
+        "relation": "historically_led_to",
+        "type": "semantic",
+        "weight": 3
+      },
+      {
+        "source": "dependent_origination",
+        "target": "three_marks_existence",
+        "relation": "enables",
+        "type": "semantic",
+        "weight": 2
+      },
+      {
+        "source": "nirvana",
+        "target": "arhat",
+        "relation": "enables",
+        "type": "semantic",
+        "weight": 2
+      },
+      {
+        "source": "nirvana",
+        "target": "bodhisattva",
+        "relation": "contrasts_with",
+        "type": "semantic",
+        "weight": 1
+      },
+      {
+        "source": "vipassana",
+        "target": "anicca",
+        "relation": "enables",
+        "type": "semantic",
+        "weight": 2
+      },
+      {
+        "source": "metta",
+        "target": "compassion",
+        "relation": "feeds_into",
+        "type": "semantic",
+        "weight": 3
+      },
+      {
+        "source": "debates_on_rebirth",
+        "target": "secular_buddhism",
+        "relation": "emerges_from",
+        "type": "semantic",
+        "weight": 2
+      },
+      {
+        "source": "rangtong_vs_shentong",
+        "target": "tibetan_buddhism",
+        "relation": "emerges_from",
+        "type": "semantic",
+        "weight": 2
+      },
+      {
+        "source": "abhidhamma",
+        "target": "psychoanalytical_self",
+        "relation": "is_analog_of",
+        "type": "cross_domain",
+        "weight": 1
+      },
+      {
+        "source": "sunyata",
+        "target": "two_truths",
+        "relation": "feeds_into",
+        "type": "semantic",
+        "weight": 2
+      },
+      {
+        "source": "middle_way",
+        "target": "madhyamaka",
+        "relation": "historically_led_to",
+        "type": "semantic",
+        "weight": 2
+      },
+      {
+        "source": "dharma",
+        "target": "sangha",
+        "relation": "enables",
+        "type": "semantic",
+        "weight": 1
+      }
+    ],
+    "learningPath": [
+      {
+        "nodeId": "buddha",
+        "order": 1,
+        "phase": "Foundations",
+        "reason": "Starting with the founder provides historical context, making abstract teachings relatable through a human story.",
+        "estimatedMinutes": 15,
+        "keyInsight": "Enlightenment is achievable by humans, not just divine beings."
+      },
+      {
+        "nodeId": "four_noble_truths",
+        "order": 2,
+        "phase": "Foundations",
+        "reason": "Introduces the core problem and solution early, framing all subsequent concepts.",
+        "estimatedMinutes": 20,
+        "keyInsight": "Suffering has a cause and can be ended through a structured path."
+      },
+      {
+        "nodeId": "dukkha",
+        "order": 3,
+        "phase": "Foundations",
+        "reason": "Understanding suffering first motivates engagement with the rest of the truths.",
+        "estimatedMinutes": 15,
+        "keyInsight": "Life's unsatisfactoriness is universal but not inevitable."
+      },
+      {
+        "nodeId": "samudaya",
+        "order": 4,
+        "phase": "Foundations",
+        "reason": "Identifying craving as cause unlocks insight into personal habits before exploring cessation.",
+        "estimatedMinutes": 20,
+        "keyInsight": "Craving perpetuates the cycle of suffering."
+      },
+      {
+        "nodeId": "nirodha",
+        "order": 5,
+        "phase": "Foundations",
+        "reason": "Cessation offers hope after diagnosing the problem, preparing for the path.",
+        "estimatedMinutes": 15,
+        "keyInsight": "Ending craving brings true peace."
+      },
+      {
+        "nodeId": "magga",
+        "order": 6,
+        "phase": "Foundations",
+        "reason": "The path provides actionable steps after understanding the problem.",
+        "estimatedMinutes": 10,
+        "keyInsight": "A practical way exists to end suffering."
+      },
+      {
+        "nodeId": "noble_eightfold_path",
+        "order": 7,
+        "phase": "Core Philosophy",
+        "reason": "Details the path now that the overview is clear, integrating ethics and practice.",
+        "estimatedMinutes": 25,
+        "keyInsight": "Balanced development in wisdom, ethics, and concentration leads to liberation."
+      },
+      {
+        "nodeId": "right_view",
+        "order": 8,
+        "phase": "Core Philosophy",
+        "reason": "Foundational to the path, it aligns perception before intentions and actions.",
+        "estimatedMinutes": 15,
+        "keyInsight": "Seeing things as they are prevents delusion."
+      },
+      {
+        "nodeId": "right_intention",
+        "order": 9,
+        "phase": "Core Philosophy",
+        "reason": "Builds on view to shape motivations, essential before behavioral elements.",
+        "estimatedMinutes": 10,
+        "keyInsight": "Pure intentions guide ethical conduct."
+      },
+      {
+        "nodeId": "right_speech",
+        "order": 10,
+        "phase": "Ethical Framework",
+        "reason": "Starts ethical training with communication, a daily practice area.",
+        "estimatedMinutes": 10,
+        "keyInsight": "Words can heal or harm; choose wisely."
+      },
+      {
+        "nodeId": "right_action",
+        "order": 11,
+        "phase": "Ethical Framework",
+        "reason": "Extends to physical deeds after speech, building moral muscle.",
+        "estimatedMinutes": 15,
+        "keyInsight": "Actions reflect and shape character."
+      },
+      {
+        "nodeId": "right_livelihood",
+        "order": 12,
+        "phase": "Ethical Framework",
+        "reason": "Integrates ethics into work life, showing Buddhism's worldly relevance.",
+        "estimatedMinutes": 20,
+        "keyInsight": "Daily work should not contradict spiritual goals."
+      },
+      {
+        "nodeId": "five_precepts",
+        "order": 13,
+        "phase": "Ethical Framework",
+        "reason": "Concrete rules reinforce right action, providing clear guidelines.",
+        "estimatedMinutes": 15,
+        "keyInsight": "Basic vows minimize harm to self and others."
+      },
+      {
+        "nodeId": "right_effort",
+        "order": 14,
+        "phase": "Ethical Framework",
+        "reason": "Energizes the path after ethical base, preventing complacency.",
+        "estimatedMinutes": 10,
+        "keyInsight": "Consistent effort cultivates wholesome states."
+      },
+      {
+        "nodeId": "right_mindfulness",
+        "order": 15,
+        "phase": "Meditation Practices",
+        "reason": "Transitions to mental training, building awareness for deeper work.",
+        "estimatedMinutes": 20,
+        "keyInsight": "Moment-to-moment awareness reveals mind's patterns."
+      },
+      {
+        "nodeId": "right_concentration",
+        "order": 16,
+        "phase": "Meditation Practices",
+        "reason": "Follows mindfulness to develop focus, enabling insight.",
+        "estimatedMinutes": 25,
+        "keyInsight": "Unified mind penetrates reality."
+      },
+      {
+        "nodeId": "samatha",
+        "order": 17,
+        "phase": "Meditation Practices",
+        "reason": "Calming technique first stabilizes mind before insight practices.",
+        "estimatedMinutes": 30,
+        "keyInsight": "Tranquility supports deeper meditation."
+      },
+      {
+        "nodeId": "vipassana",
+        "order": 18,
+        "phase": "Meditation Practices",
+        "reason": "Insight builds on calm, directly addressing impermanence.",
+        "estimatedMinutes": 40,
+        "keyInsight": "Observing change leads to wisdom."
+      },
+      {
+        "nodeId": "metta",
+        "order": 19,
+        "phase": "Meditation Practices",
+        "reason": "Balances insight with compassion, preventing arid intellectualism.",
+        "estimatedMinutes": 20,
+        "keyInsight": "Loving-kindness softens the heart."
+      },
+      {
+        "nodeId": "brahmaviharas",
+        "order": 20,
+        "phase": "Meditation Practices",
+        "reason": "Expands metta to full emotional cultivation, integrating ethics.",
+        "estimatedMinutes": 25,
+        "keyInsight": "Divine states foster universal goodwill."
+      },
+      {
+        "nodeId": "jhana_states",
+        "order": 21,
+        "phase": "Meditation Practices",
+        "reason": "Advanced absorptions unlock after basic techniques, for profound calm.",
+        "estimatedMinutes": 45,
+        "keyInsight": "Deep concentration reveals mind's potential."
+      },
+      {
+        "nodeId": "three_marks_existence",
+        "order": 22,
+        "phase": "Core Philosophy",
+        "reason": "Reintroduces after practices to deepen understanding through experience.",
+        "estimatedMinutes": 20,
+        "keyInsight": "All things are impermanent, unsatisfactory, non-self."
+      },
+      {
+        "nodeId": "anicca",
+        "order": 23,
+        "phase": "Core Philosophy",
+        "reason": "Impermanence first among marks, as it's most observable.",
+        "estimatedMinutes": 15,
+        "keyInsight": "Change is constant; attachment futile."
+      },
+      {
+        "nodeId": "dukkha",
+        "order": 24,
+        "phase": "Core Philosophy",
+        "reason": "Links back to suffering, now with experiential depth.",
+        "estimatedMinutes": 15,
+        "keyInsight": "Unsatisfactoriness arises from clinging to change."
+      },
+      {
+        "nodeId": "anatta",
+        "order": 25,
+        "phase": "Core Philosophy",
+        "reason": "No-self is hardest, comes after seeing impermanence and suffering.",
+        "estimatedMinutes": 30,
+        "keyInsight": "No permanent self exists amid flux."
+      },
+      {
+        "nodeId": "dependent_origination",
+        "order": 26,
+        "phase": "Core Philosophy",
+        "reason": "Explains marks mechanistically, unlocking causal understanding.",
+        "estimatedMinutes": 40,
+        "keyInsight": "Phenomena arise interdependently, no isolates."
+      },
+      {
+        "nodeId": "karma",
+        "order": 27,
+        "phase": "Core Philosophy",
+        "reason": "Connects intention to causation, bridging ethics and philosophy.",
+        "estimatedMinutes": 25,
+        "keyInsight": "Actions shape future, ethically and existentially."
+      },
+      {
+        "nodeId": "rebirth",
+        "order": 28,
+        "phase": "Cosmology & Metaphysics",
+        "reason": "Extends karma across lives, expanding worldview.",
+        "estimatedMinutes": 30,
+        "keyInsight": "Consciousness continues based on past deeds."
+      },
+      {
+        "nodeId": "six_realms",
+        "order": 29,
+        "phase": "Cosmology & Metaphysics",
+        "reason": "Illustrates rebirth concretely, as mental and literal states.",
+        "estimatedMinutes": 20,
+        "keyInsight": "Realms reflect mind's qualities driven by karma."
+      },
+      {
+        "nodeId": "nirvana",
+        "order": 30,
+        "phase": "Cosmology & Metaphysics",
+        "reason": "Culminates cosmology as escape from cycles.",
+        "estimatedMinutes": 25,
+        "keyInsight": "Unconditioned peace beyond birth and death."
+      },
+      {
+        "nodeId": "middle_way",
+        "order": 31,
+        "phase": "Core Philosophy",
+        "reason": "Balances extremes, preparing for advanced concepts.",
+        "estimatedMinutes": 15,
+        "keyInsight": "Avoid dualities for true insight."
+      },
+      {
+        "nodeId": "non_attachment",
+        "order": 32,
+        "phase": "Core Philosophy",
+        "reason": "Practical outgrowth of marks, essential for liberation.",
+        "estimatedMinutes": 20,
+        "keyInsight": "Letting go frees from suffering's grip."
+      },
+      {
+        "nodeId": "compassion",
+        "order": 33,
+        "phase": "Ethical Framework",
+        "reason": "Extends ethics universally after personal path.",
+        "estimatedMinutes": 15,
+        "keyInsight": "Empathy drives aid to all suffering beings."
+      },
+      {
+        "nodeId": "dharma",
+        "order": 34,
+        "phase": "Foundations",
+        "reason": "Reinforces teachings as truth, tying back to Buddha.",
+        "estimatedMinutes": 10,
+        "keyInsight": "Universal law guiding to awakening."
+      },
+      {
+        "nodeId": "sangha",
+        "order": 35,
+        "phase": "Ethical Framework",
+        "reason": "Community supports practice, social dimension.",
+        "estimatedMinutes": 15,
+        "keyInsight": "Fellowship sustains spiritual journey."
+      },
+      {
+        "nodeId": "historical_development_first_council",
+        "order": 36,
+        "phase": "Historical Development",
+        "reason": "Shifts to history after core ideas, showing preservation.",
+        "estimatedMinutes": 20,
+        "keyInsight": "Early standardization ensured teaching integrity."
+      },
+      {
+        "nodeId": "spread_to_asia",
+        "order": 37,
+        "phase": "Historical Development",
+        "reason": "Shows adaptation and diversity origins.",
+        "estimatedMinutes": 25,
+        "keyInsight": "Cultural integration enriched Buddhism."
+      },
+      {
+        "nodeId": "theravada",
+        "order": 38,
+        "phase": "Schools & Traditions",
+        "reason": "Oldest school first, as baseline for others.",
+        "estimatedMinutes": 30,
+        "keyInsight": "Focus on original texts and arhat ideal."
+      },
+      {
+        "nodeId": "abhidhamma",
+        "order": 39,
+        "phase": "Schools & Traditions",
+        "reason": "Analytical depth in Theravada, bridging to psychology.",
+        "estimatedMinutes": 40,
+        "keyInsight": "Detailed mind-map for understanding phenomena."
+      },
+      {
+        "nodeId": "mahayana",
+        "order": 40,
+        "phase": "Schools & Traditions",
+        "reason": "Expansive tradition contrasts Theravada, introducing bodhisattva.",
+        "estimatedMinutes": 35,
+        "keyInsight": "Universal liberation for all beings."
+      },
+      {
+        "nodeId": "bodhisattva",
+        "order": 41,
+        "phase": "Schools & Traditions",
+        "reason": "Key Mahayana figure, unlocking compassionate path.",
+        "estimatedMinutes": 25,
+        "keyInsight": "Delay nirvana to help others."
+      },
+      {
+        "nodeId": "arhat",
+        "order": 42,
+        "phase": "Schools & Traditions",
+        "reason": "Contrasts bodhisattva, highlighting school differences.",
+        "estimatedMinutes": 20,
+        "keyInsight": "Personal enlightenment as goal."
+      },
+      {
+        "nodeId": "prajnaparamita",
+        "order": 43,
+        "phase": "Schools & Traditions",
+        "reason": "Wisdom texts lead to emptiness concepts.",
+        "estimatedMinutes": 30,
+        "keyInsight": "Transcendent wisdom beyond concepts."
+      },
+      {
+        "nodeId": "sunyata",
+        "order": 44,
+        "phase": "Advanced Metaphysics",
+        "reason": "Emptiness unlocks Mahayana philosophy after basics.",
+        "estimatedMinutes": 45,
+        "keyInsight": "No inherent existence; all interdependent."
+      },
+      {
+        "nodeId": "two_truths",
+        "order": 45,
+        "phase": "Advanced Metaphysics",
+        "reason": "Resolves emptiness paradoxes.",
+        "estimatedMinutes": 35,
+        "keyInsight": "Conventional and ultimate coexist."
+      },
+      {
+        "nodeId": "madhyamaka",
+        "order": 46,
+        "phase": "Schools & Traditions",
+        "reason": "Dialectical approach to emptiness.",
+        "estimatedMinutes": 40,
+        "keyInsight": "Deconstruct views to reveal middle."
+      },
+      {
+        "nodeId": "nagarjuna_influence",
+        "order": 47,
+        "phase": "Historical Development",
+        "reason": "Key figure's impact on philosophy.",
+        "estimatedMinutes": 30,
+        "keyInsight": "Dialectics transformed Buddhist thought."
+      },
+      {
+        "nodeId": "yogacara",
+        "order": 48,
+        "phase": "Schools & Traditions",
+        "reason": "Complements Madhyamaka with mind focus.",
+        "estimatedMinutes": 35,
+        "keyInsight": "Reality as consciousness-only."
+      },
+      {
+        "nodeId": "mind_only",
+        "order": 49,
+        "phase": "Advanced Metaphysics",
+        "reason": "Deepens understanding of perception.",
+        "estimatedMinutes": 40,
+        "keyInsight": "External world is mind-manifested."
+      },
+      {
+        "nodeId": "tathagatagarbha",
+        "order": 50,
+        "phase": "Advanced Metaphysics",
+        "reason": "Positive counter to emptiness, affirming potential.",
+        "estimatedMinutes": 30,
+        "keyInsight": "Innate Buddha essence in all."
+      },
+      {
+        "nodeId": "huayan",
+        "order": 51,
+        "phase": "Schools & Traditions",
+        "reason": "Chinese integration of interdependence.",
+        "estimatedMinutes": 25,
+        "keyInsight": "Mutual interpenetration of phenomena."
+      },
+      {
+        "nodeId": "interpenetration",
+        "order": 52,
+        "phase": "Advanced Metaphysics",
+        "reason": "Illustrates holistic reality.",
+        "estimatedMinutes": 30,
+        "keyInsight": "One contains all; all in one."
+      },
+      {
+        "nodeId": "tiantai",
+        "order": 53,
+        "phase": "Schools & Traditions",
+        "reason": "Harmonizes diverse teachings.",
+        "estimatedMinutes": 25,
+        "keyInsight": "Integrated view of doctrines."
+      },
+      {
+        "nodeId": "zen",
+        "order": 54,
+        "phase": "Schools & Traditions",
+        "reason": "Direct experience emphasis.",
+        "estimatedMinutes": 30,
+        "keyInsight": "Beyond words to realization."
+      },
+      {
+        "nodeId": "koan_practice",
+        "order": 55,
+        "phase": "Meditation Practices",
+        "reason": "Zen tool for breaking concepts.",
+        "estimatedMinutes": 35,
+        "keyInsight": "Paradoxes shatter ordinary mind."
+      },
+      {
+        "nodeId": "vajrayana",
+        "order": 56,
+        "phase": "Schools & Traditions",
+        "reason": "Esoteric path for rapid awakening.",
+        "estimatedMinutes": 40,
+        "keyInsight": "Transform poisons into wisdom."
+      },
+      {
+        "nodeId": "tantric_methods",
+        "order": 57,
+        "phase": "Meditation Practices",
+        "reason": "Advanced techniques in Vajrayana.",
+        "estimatedMinutes": 45,
+        "keyInsight": "Energy work accelerates enlightenment."
+      },
+      {
+        "nodeId": "tibetan_buddhism",
+        "order": 58,
+        "phase": "Schools & Traditions",
+        "reason": "Cultural synthesis with tantra.",
+        "estimatedMinutes": 35,
+        "keyInsight": "Lamas guide through complex rituals."
+      },
+      {
+        "nodeId": "three_bodies_buddha",
+        "order": 59,
+        "phase": "Advanced Metaphysics",
+        "reason": "Explains Buddha's multifaceted nature.",
+        "estimatedMinutes": 30,
+        "keyInsight": "Ultimate, enjoyment, manifestation bodies."
+      },
+      {
+        "nodeId": "bardo_states",
+        "order": 60,
+        "phase": "Cosmology & Metaphysics",
+        "reason": "Tibetan view on death transitions.",
+        "estimatedMinutes": 35,
+        "keyInsight": "Opportunities for liberation post-death."
+      },
+      {
+        "nodeId": "modern_buddhism",
+        "order": 61,
+        "phase": "Historical Development",
+        "reason": "Contemporary evolution after traditions.",
+        "estimatedMinutes": 25,
+        "keyInsight": "Adapts to science and secularism."
+      },
+      {
+        "nodeId": "secular_buddhism",
+        "order": 62,
+        "phase": "Debates & Frontiers",
+        "reason": "Modern variant sparking debates.",
+        "estimatedMinutes": 20,
+        "keyInsight": "Ethics without metaphysics."
+      },
+      {
+        "nodeId": "debates_on_rebirth",
+        "order": 63,
+        "phase": "Debates & Frontiers",
+        "reason": "Challenges traditional beliefs.",
+        "estimatedMinutes": 30,
+        "keyInsight": "Literal or psychological interpretations?"
+      },
+      {
+        "nodeId": "rangtong_vs_shentong",
+        "order": 64,
+        "phase": "Debates & Frontiers",
+        "reason": "Advanced emptiness controversies.",
+        "estimatedMinutes": 40,
+        "keyInsight": "Empty of self or other?"
+      },
+      {
+        "nodeId": "minority_views_self",
+        "order": 65,
+        "phase": "Debates & Frontiers",
+        "reason": "Historical alternatives to anatta.",
+        "estimatedMinutes": 25,
+        "keyInsight": "Personalist schools challenged orthodoxy."
+      },
+      {
+        "nodeId": "open_questions_consciousness",
+        "order": 66,
+        "phase": "Debates & Frontiers",
+        "reason": "Interfaces with science.",
+        "estimatedMinutes": 35,
+        "keyInsight": "Mind's origin remains frontier."
+      },
+      {
+        "nodeId": "dead_ends_sarvasti_vada",
+        "order": 67,
+        "phase": "Debates & Frontiers",
+        "reason": "Lessons from abandoned theories.",
+        "estimatedMinutes": 20,
+        "keyInsight": "Eternalism critiqued in time theories."
+      },
+      {
+        "nodeId": "stoic_apatheia",
+        "order": 68,
+        "phase": "Cross-Domain Insights",
+        "reason": "First bridge to philosophy, showing parallels.",
+        "estimatedMinutes": 25,
+        "keyInsight": "Detachment fosters inner peace."
+      },
+      {
+        "nodeId": "quantum_entanglement",
+        "order": 69,
+        "phase": "Cross-Domain Insights",
+        "reason": "Science analog to interdependence.",
+        "estimatedMinutes": 30,
+        "keyInsight": "Non-local connections mirror reality."
+      },
+      {
+        "nodeId": "thermodynamic_entropy",
+        "order": 70,
+        "phase": "Cross-Domain Insights",
+        "reason": "Physics parallel to impermanence.",
+        "estimatedMinutes": 25,
+        "keyInsight": "Disorder tendency explains decay."
+      },
+      {
+        "nodeId": "mindfulness_psychology",
+        "order": 71,
+        "phase": "Cross-Domain Insights",
+        "reason": "Practical application in therapy.",
+        "estimatedMinutes": 20,
+        "keyInsight": "Reduces stress through awareness."
+      },
+      {
+        "nodeId": "systems_interdependence",
+        "order": 72,
+        "phase": "Cross-Domain Insights",
+        "reason": "Modern theory echoing causation.",
+        "estimatedMinutes": 30,
+        "keyInsight": "Systems thrive on connections."
+      },
+      {
+        "nodeId": "existential_psychology",
+        "order": 73,
+        "phase": "Cross-Domain Insights",
+        "reason": "Meaning amid suffering parallel.",
+        "estimatedMinutes": 25,
+        "keyInsight": "Authenticity combats absurdity."
+      },
+      {
+        "nodeId": "phenomenological_psychology",
+        "order": 74,
+        "phase": "Cross-Domain Insights",
+        "reason": "Experience focus aligns with mind analysis.",
+        "estimatedMinutes": 30,
+        "keyInsight": "Lived reality over abstract."
+      },
+      {
+        "nodeId": "cognitive_psychology",
+        "order": 75,
+        "phase": "Cross-Domain Insights",
+        "reason": "Mental processes mirror Abhidhamma.",
+        "estimatedMinutes": 25,
+        "keyInsight": "Biases shape perception."
+      },
+      {
+        "nodeId": "stoic_cosmo_politanism",
+        "order": 76,
+        "phase": "Cross-Domain Insights",
+        "reason": "Universal ethics parallel.",
+        "estimatedMinutes": 20,
+        "keyInsight": "All humans as citizens."
+      },
+      {
+        "nodeId": "information_uncertainty",
+        "order": 77,
+        "phase": "Cross-Domain Insights",
+        "reason": "Uncertainty as dukkha analog.",
+        "estimatedMinutes": 25,
+        "keyInsight": "Predictability limits knowledge."
+      },
+      {
+        "nodeId": "quantum_superposition",
+        "order": 78,
+        "phase": "Cross-Domain Insights",
+        "reason": "Multiple states like emptiness.",
+        "estimatedMinutes": 30,
+        "keyInsight": "Reality probabilistic until observed."
+      },
+      {
+        "nodeId": "humanistic_psychology",
+        "order": 79,
+        "phase": "Cross-Domain Insights",
+        "reason": "Growth potential like Buddha-nature.",
+        "estimatedMinutes": 20,
+        "keyInsight": "Self-actualization innate drive."
+      },
+      {
+        "nodeId": "psychoanalytical_self",
+        "order": 80,
+        "phase": "Cross-Domain Insights",
+        "reason": "Ego contrasts no-self, for synthesis.",
+        "estimatedMinutes": 35,
+        "keyInsight": "Unconscious influences self-illusion."
+      }
+    ],
+    "metadata": {
+      "totalConcepts": 80,
+      "totalLinks": 100,
+      "crossDomainInsights": [
+        "Buddhist emptiness (sunyata) mirrors quantum physics' rejection of inherent properties, as both posit that entities derive meaning from relations rather than isolated essence; this relational ontology challenges classical realism, suggesting observation or interdependence collapses apparent independence into a web of mutual arising.",
+        "Impermanence (anicca) shares structure with thermodynamic entropy, where systems naturally progress toward disorder without input; in Buddhism, this underscores the effort needed for ethical living, while in physics it explains universal decay, both warning against attachment to transient forms.",
+        "Non-attachment in Buddhism is analogous to Stoic apatheia, both cultivating resilience by detaching from external outcomes; this cross-philosophy bridge reveals how emotional equanimity enables antifragility, turning adversity into growth across ancient wisdom traditions.",
+        "Dependent origination parallels systems theory's interdependence, viewing phenomena as emergent from networks rather than linear causes; this insight integrates Buddhist causality with modern complexity science, illuminating how small changes ripple through ecosystems or societies.",
+        "The Abhidhamma's psychological framework anticipates cognitive psychology's analysis of mental factors, both dissecting perception and bias; this connection shows Buddhism as an early science of mind, offering tools for therapy that modern psychology has adapted for mental health.",
+        "Dukkha's existential unsatisfactoriness resonates with existential psychology's confrontation of meaninglessness; both traditions propose authentic living as antidote, with Buddhism's path providing structured practices to navigate life's inherent anxiety.",
+        "Sunyata's two truths doctrine aligns with quantum superposition, where particles hold multiple states until measured; this analogy highlights how conceptual frameworks 'collapse' ultimate reality into conventional experience, bridging Eastern philosophy and quantum mechanics.",
+        "Buddha-nature (tathagatagarbha) echoes humanistic psychology's self-actualization, positing innate potential for growth; both emphasize unfolding inherent goodness through supportive conditions, countering deterministic views of human nature.",
+        "Anatta (no-self) contrasts yet informs psychoanalytical theories of ego, revealing self as constructed illusion; this dialogue exposes how unconscious clinging perpetuates suffering, with Buddhist meditation offering a deconstructive path beyond Freudian integration.",
+        "Universal compassion in the bodhisattva ideal shares ethos with Stoic cosmopolitanism, treating all as kin in a rational universe; this ethical bridge promotes global justice, showing how ancient philosophies anticipate modern human rights.",
+        "Dukkha's pervasive uncertainty is structurally similar to information theory's entropy as measure of unpredictability; both concepts explain why ordered states require vigilance, linking Buddhist mindfulness to data science's handling of noise and ambiguity.",
+        "Interdependence in dependent origination mirrors quantum entanglement's non-local correlations; this scientific-philosophical link suggests reality as holistic field, where separation is illusion, inspiring unified theories in physics and ethics.",
+        "Mind-only (Yogacara) philosophy anticipates phenomenological psychology's emphasis on subjective experience; both reject naive realism, focusing on how consciousness constructs world, offering methods to bracket assumptions for clearer insight.",
+        "The middle way's avoidance of extremes parallels dialectics in Madhyamaka and quantum complementarity; both resolve apparent contradictions by transcending binary thinking, fostering nuanced understanding of complex phenomena.",
+        "Karma's intentional causation shares patterns with feedback loops in systems theory; this analogy illustrates how actions reinforce habits or ecosystems, providing a model for ethical interventions in personal and environmental spheres."
+      ],
+      "suggestedNextTopics": [
+        "stoicism",
+        "quantum_physics",
+        "mindfulness_based_therapy",
+        "systems_theory",
+        "hinduism"
+      ],
+      "commonMisconceptions": [
+        "Buddhism is pessimistic due to emphasis on suffering, but it actually offers an optimistic path to complete liberation.",
+        "Buddhism requires belief in literal rebirth, yet many interpret it metaphorically as psychological states.",
+        "Meditation is just relaxation, whereas it's a rigorous tool for insight into reality's nature.",
+        "Buddhism rejects self entirely, but anatta critiques permanent ego, not functional identity.",
+        "Mahayana supersedes Theravada, but they are parallel traditions with shared roots."
+      ],
+      "centralNode": "four_noble_truths"
+    }
+  }
