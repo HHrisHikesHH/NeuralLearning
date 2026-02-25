@@ -221,7 +221,7 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);width:100vw;
 #lp-toggle.on{border-color:rgba(0,229,255,0.3);background:rgba(0,229,255,0.06);color:var(--accent);}
 
 /* NODE TOOLTIP */
-#ntip{position:absolute;pointer-events:none;width:230px;z-index:50;
+#ntip{position:absolute;pointer-events:all;width:230px;z-index:50;
   background:rgba(2,5,8,0.94);border:1px solid rgba(255,255,255,0.07);
   border-radius:12px;padding:14px;backdrop-filter:blur(16px);
   opacity:0;transition:opacity 0.15s;top:0;left:0;}
@@ -393,6 +393,10 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);width:100vw;
         <div id="nt-pre-tags"></div>
       </div>
       <div class="nt-hint">Click to focus connections</div>
+      <button class="btn-secondary" id="nt-web-btn" style="margin-top:8px;pointer-events:auto;">
+        🔎 right click for more info
+      </button>
+      <div id="nt-web-info" class="prompt-box" style="margin-top:8px;max-height:140px;"></div>
     </div>
 
     <div id="hint-bar">drag to pan · scroll to zoom<br>hover to preview · click to focus</div>
@@ -843,13 +847,29 @@ document.getElementById('back-land').addEventListener('click', () => {
 
 document.getElementById('copy-btn').addEventListener('click', () => {
   const txt = document.getElementById('gen-prompt').textContent;
-  navigator.clipboard.writeText(txt).then(() => {
-    const btn = document.getElementById('copy-btn');
-    btn.textContent = '✓ Copied!';
-    btn.classList.add('copied');
-    document.getElementById('pill-paste').classList.add('active');
-    setTimeout(() => { btn.textContent = '⎘ Copy Prompt'; btn.classList.remove('copied'); }, 2500);
-  });
+  const btn = document.getElementById('copy-btn');
+
+  if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+    navigator.clipboard.writeText(txt).then(() => {
+      btn.textContent = '✓ Copied!';
+      btn.classList.add('copied');
+      document.getElementById('pill-paste').classList.add('active');
+      setTimeout(() => { btn.textContent = '⎘ Copy Prompt'; btn.classList.remove('copied'); }, 2500);
+    }).catch(() => {
+      btn.textContent = 'Copy failed';
+      setTimeout(() => { btn.textContent = '⎘ Copy Prompt'; }, 2000);
+    });
+  } else {
+    // Fallback: select text in the prompt box for manual copy
+    const range = document.createRange();
+    const promptEl = document.getElementById('gen-prompt');
+    range.selectNodeContents(promptEl);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    btn.textContent = 'Select & press Ctrl+C';
+    setTimeout(() => { btn.textContent = '⎘ Copy Prompt'; }, 3000);
+  }
 });
 
 document.getElementById('schema-toggle').addEventListener('click', () => {
@@ -914,6 +934,13 @@ let simulation, zoomBehavior, gSel;
 
 function buildGraph(data) {
   const W = innerWidth, H = innerHeight;
+
+  let activeNode = null;
+  let currentNodeForWebInfo = null;
+  const tip = document.getElementById('ntip');
+  const webBox = document.getElementById('nt-web-info');
+  const webBtn = document.getElementById('nt-web-btn');
+  if (webBox) webBox.textContent = '';
 
   // Topbar
   document.getElementById('tb-topic').textContent = data.topic;
@@ -1073,7 +1100,6 @@ function buildGraph(data) {
   });
 
   // ── HOVER TOOLTIP ──
-  const tip = document.getElementById('ntip');
   NE.on('mouseover', (e, d) => {
     if (d.type==='root') return;
     const cat = data.categories.find(c=>c.id===(d.type==='category'?d.id:d.category));
@@ -1095,11 +1121,17 @@ function buildGraph(data) {
       preEl.style.display = 'block';
     } else { preEl.style.display = 'none'; }
 
+    currentNodeForWebInfo = d;
     tip.classList.add('show');
     moveTip(e);
   })
   .on('mousemove', moveTip)
-  .on('mouseout', () => tip.classList.remove('show'));
+  .on('mouseout', (e, d) => {
+    if (!activeNode || activeNode !== d.id) {
+      tip.classList.remove('show');
+      if (webBox) webBox.textContent = '';
+    }
+  });
 
   function moveTip(e) {
     let x = e.clientX + 16, y = e.clientY - 10;
@@ -1109,11 +1141,12 @@ function buildGraph(data) {
   }
 
   // ── CLICK FOCUS ──
-  let activeNode = null;
   NE.on('click', (e, d) => {
     e.stopPropagation();
     if (activeNode===d.id) { clearFocus(); return; }
     activeNode = d.id;
+    currentNodeForWebInfo = d;
+    if (webBox) webBox.textContent = '';
 
     const conn = new Set([d.id]);
     allLinks.forEach(l => {
@@ -1144,10 +1177,74 @@ function buildGraph(data) {
 
   function clearFocus(){
     activeNode=null;
+    currentNodeForWebInfo = null;
     NE.classed('dim',false).classed('hi',false);
     LE.classed('hi',false).classed('dim',false);
     document.querySelectorAll('.lp-step').forEach(el=>el.classList.remove('active'));
+    tip.classList.remove('show');
+    if (webBox) webBox.textContent = '';
   }
+
+  async function fetchWebInfoForNode(node) {
+    if (!webBox || !node) return;
+    const searchTerm = `${node.label} ${data.topic}`;
+    webBox.textContent = 'Searching web…';
+
+    try {
+      // First, search for the best matching article title
+      const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTerm)}&srlimit=1&format=json&origin=*`;
+      const searchRes = await fetch(searchUrl);
+      if (!searchRes.ok) throw new Error(`HTTP ${searchRes.status}`);
+      const searchJson = await searchRes.json();
+      const hits = (searchJson.query && searchJson.query.search) || [];
+
+      if (!hits.length) {
+        webBox.textContent = 'No matching article found for this concept.';
+        return;
+      }
+
+      const title = hits[0].title;
+
+      // Then, fetch the extract for that title
+      const pageUrl = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=1&explaintext=1&format=json&origin=*&titles=${encodeURIComponent(title)}`;
+      const res = await fetch(pageUrl);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+      const page = Object.values(json.query.pages)[0];
+
+      if (!page || !page.extract) {
+        webBox.textContent = 'No summary found for this concept.';
+        return;
+      }
+
+      let text = page.extract;
+      const words = text.split(' ');
+      if (words.length > 260) {
+        text = words.slice(0, 260).join(' ') + ' …';
+      }
+      webBox.textContent = text;
+    } catch (err) {
+      console.error(err);
+      webBox.textContent = 'Could not load web summary. Please try again.';
+    }
+  }
+
+  if (webBtn && webBox) {
+    webBtn.onclick = () => {
+      if (!currentNodeForWebInfo) return;
+      fetchWebInfoForNode(currentNodeForWebInfo);
+    };
+  }
+
+  NE.on('contextmenu', (e, d) => {
+    e.preventDefault();
+    if (d.type === 'root') return;
+    activeNode = d.id;
+    currentNodeForWebInfo = d;
+    tip.classList.add('show');
+    moveTip(e);
+    fetchWebInfoForNode(d);
+  });
 
   // ── LEGEND ──
   const legEl = document.getElementById('leg-items');
