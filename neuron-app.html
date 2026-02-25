@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neuron — Knowledge Graph Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,300;0,400;0,600;0,700;0,800;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<style>
+:root {
+  --bg: #020508;
+  --bg2: #080d14;
+  --bg3: #0c1520;
+  --border: rgba(255,255,255,0.06);
+  --accent: #00e5ff;
+  --accent2: #c77dff;
+  --green: #69f0ae;
+  --yellow: #ffd93d;
+  --red: #ff6b6b;
+  --text: #d0e8f4;
+  --muted: #2a4a5e;
+  --muted2: #4a7a90;
+  --mono: 'Space Mono', monospace;
+  --sans: 'Exo 2', sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);font-family:var(--sans);color:var(--text);width:100vw;height:100vh;overflow:hidden;}
+
+/* ── CANVAS ── */
+#stars{position:fixed;inset:0;z-index:0;}
+
+/* ── SCREENS ── */
+.screen{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;transition:opacity 0.4s,transform 0.4s;}
+.screen.hidden{opacity:0;pointer-events:none;transform:scale(0.97);}
+
+/* ── SCREEN 1: LANDING ── */
+#s-land{background:radial-gradient(ellipse at 50% 30%, rgba(0,229,255,0.04) 0%, transparent 65%);}
+.land-logo{font-size:3rem;font-weight:800;letter-spacing:-1px;margin-bottom:6px;
+  background:linear-gradient(135deg,#00e5ff 0%,#c77dff 50%,#69f0ae 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.land-tag{font-family:var(--mono);font-size:0.65rem;color:var(--muted2);letter-spacing:2px;
+  text-transform:uppercase;margin-bottom:48px;}
+.land-card{background:var(--bg2);border:1px solid var(--border);border-radius:20px;
+  padding:36px 40px;width:520px;max-width:95vw;}
+.lc-label{font-family:var(--mono);font-size:0.6rem;color:var(--muted2);text-transform:uppercase;
+  letter-spacing:1.5px;margin-bottom:8px;}
+.lc-input{width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--border);
+  border-radius:10px;padding:13px 16px;color:var(--text);font-family:var(--sans);font-size:0.95rem;
+  font-weight:600;outline:none;transition:border-color 0.2s,background 0.2s;margin-bottom:22px;}
+.lc-input:focus{border-color:rgba(0,229,255,0.35);background:rgba(0,229,255,0.03);}
+.lc-input::placeholder{color:var(--muted);font-weight:400;}
+.depth-row{display:flex;gap:8px;margin-bottom:28px;}
+.depth-btn{flex:1;padding:10px 8px;border-radius:9px;border:1px solid var(--border);
+  background:transparent;color:var(--muted2);font-family:var(--mono);font-size:0.6rem;
+  cursor:pointer;transition:all 0.2s;text-align:center;letter-spacing:0.5px;}
+.depth-btn .d-icon{font-size:1.1rem;display:block;margin-bottom:4px;}
+.depth-btn .d-name{display:block;font-weight:700;margin-bottom:2px;}
+.depth-btn .d-hint{font-size:0.5rem;opacity:0.6;line-height:1.4;}
+.depth-btn.active{border-color:var(--accent);background:rgba(0,229,255,0.07);color:var(--accent);}
+.depth-btn:hover:not(.active){background:rgba(255,255,255,0.03);color:var(--text);}
+.btn-primary{width:100%;padding:14px;border-radius:10px;border:none;
+  background:linear-gradient(135deg,rgba(0,229,255,0.15),rgba(199,125,255,0.15));
+  border:1px solid rgba(0,229,255,0.25);color:var(--accent);font-family:var(--mono);
+  font-size:0.75rem;font-weight:700;letter-spacing:1px;cursor:pointer;
+  transition:all 0.2s;text-transform:uppercase;}
+.btn-primary:hover{background:linear-gradient(135deg,rgba(0,229,255,0.22),rgba(199,125,255,0.22));
+  border-color:rgba(0,229,255,0.45);}
+.btn-primary:disabled{opacity:0.35;cursor:not-allowed;}
+
+/* ── SCREEN 2: PROMPT ── */
+#s-prompt{background:radial-gradient(ellipse at 70% 20%, rgba(199,125,255,0.04) 0%, transparent 60%);}
+.prompt-wrap{width:700px;max-width:95vw;}
+.pw-hdr{display:flex;align-items:center;gap:14px;margin-bottom:24px;}
+.pw-back{background:transparent;border:1px solid var(--border);border-radius:8px;
+  padding:7px 14px;color:var(--muted2);font-family:var(--mono);font-size:0.6rem;
+  cursor:pointer;transition:all 0.15s;}
+.pw-back:hover{border-color:rgba(255,255,255,0.15);color:var(--text);}
+.pw-title{font-size:1.1rem;font-weight:700;}
+.pw-title span{font-weight:300;opacity:0.5;font-style:italic;}
+.step-pills{display:flex;gap:6px;margin-bottom:20px;}
+.sp{padding:5px 12px;border-radius:20px;font-family:var(--mono);font-size:0.58rem;
+  border:1px solid var(--border);color:var(--muted);display:flex;align-items:center;gap:5px;}
+.sp.done{border-color:rgba(105,240,174,0.35);background:rgba(105,240,174,0.06);color:var(--green);}
+.sp.active{border-color:rgba(0,229,255,0.35);background:rgba(0,229,255,0.06);color:var(--accent);}
+.pw-section{background:var(--bg2);border:1px solid var(--border);border-radius:16px;
+  padding:20px 22px;margin-bottom:14px;}
+.pw-sl{font-family:var(--mono);font-size:0.6rem;color:var(--muted2);text-transform:uppercase;
+  letter-spacing:1.5px;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.pw-sl::after{content:'';flex:1;height:1px;background:var(--border);}
+.prompt-box{background:rgba(0,0,0,0.4);border-radius:10px;padding:14px;
+  font-family:var(--mono);font-size:0.63rem;line-height:1.8;color:#7aabbc;
+  max-height:220px;overflow-y:auto;white-space:pre-wrap;border:1px solid rgba(255,255,255,0.04);}
+.prompt-box::-webkit-scrollbar{width:3px;}
+.prompt-box::-webkit-scrollbar-thumb{background:rgba(0,229,255,0.15);border-radius:2px;}
+.copy-row{display:flex;gap:8px;margin-top:10px;}
+.btn-copy{padding:9px 18px;border-radius:8px;border:1px solid rgba(0,229,255,0.25);
+  background:rgba(0,229,255,0.05);color:var(--accent);font-family:var(--mono);font-size:0.65rem;
+  cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px;}
+.btn-copy:hover{background:rgba(0,229,255,0.1);}
+.btn-copy.copied{border-color:rgba(105,240,174,0.4);background:rgba(105,240,174,0.07);color:var(--green);}
+.llm-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+.llm-chip{padding:4px 10px;border-radius:6px;border:1px solid var(--border);
+  font-family:var(--mono);font-size:0.58rem;color:var(--muted2);}
+.paste-area{width:100%;min-height:100px;max-height:180px;background:rgba(0,0,0,0.35);
+  border:1px solid var(--border);border-radius:10px;padding:14px;
+  font-family:var(--mono);font-size:0.63rem;color:var(--text);resize:vertical;outline:none;
+  transition:border-color 0.2s;line-height:1.7;}
+.paste-area:focus{border-color:rgba(0,229,255,0.3);}
+.paste-area::placeholder{color:var(--muted);}
+#val-msg{font-family:var(--mono);font-size:0.62rem;padding:8px 12px;border-radius:7px;
+  margin-top:8px;display:none;}
+#val-msg.ok{background:rgba(105,240,174,0.08);border:1px solid rgba(105,240,174,0.25);color:var(--green);}
+#val-msg.err{background:rgba(255,107,107,0.08);border:1px solid rgba(255,107,107,0.25);color:var(--red);}
+.schema-toggle{font-family:var(--mono);font-size:0.58rem;color:var(--muted2);
+  cursor:pointer;padding:6px 0;display:inline-flex;align-items:center;gap:5px;
+  border-bottom:1px dashed rgba(255,255,255,0.08);}
+.schema-box{background:rgba(0,0,0,0.4);border-radius:8px;padding:12px;margin-top:10px;
+  font-family:var(--mono);font-size:0.58rem;color:var(--muted2);line-height:1.7;
+  max-height:140px;overflow-y:auto;border:1px solid rgba(255,255,255,0.04);display:none;}
+.btn-launch{width:100%;padding:14px;border-radius:10px;border:none;
+  background:linear-gradient(135deg,rgba(0,229,255,0.12),rgba(199,125,255,0.12));
+  border:1px solid rgba(0,229,255,0.2);color:var(--accent);font-family:var(--mono);
+  font-size:0.75rem;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:1px;}
+.btn-launch:hover:not(:disabled){background:linear-gradient(135deg,rgba(0,229,255,0.2),rgba(199,125,255,0.2));}
+.btn-launch:disabled{opacity:0.3;cursor:not-allowed;}
+
+/* ── SCREEN 3: GRAPH ── */
+#s-graph{z-index:5;}
+#graph-svg{position:fixed;inset:0;z-index:1;cursor:grab;}
+#graph-svg:active{cursor:grabbing;}
+#graph-ui{position:fixed;inset:0;z-index:10;pointer-events:none;}
+
+/* TOPBAR */
+#topbar{position:absolute;top:0;left:0;right:0;height:56px;
+  background:linear-gradient(180deg,rgba(2,5,8,0.97),transparent);
+  display:flex;align-items:center;padding:0 18px;gap:12px;pointer-events:all;}
+.tb-back{background:transparent;border:1px solid var(--border);border-radius:7px;
+  padding:6px 12px;color:var(--muted2);font-family:var(--mono);font-size:0.58rem;
+  cursor:pointer;transition:all 0.15s;}
+.tb-back:hover{color:var(--text);border-color:rgba(255,255,255,0.15);}
+.tb-topic{font-size:0.85rem;font-weight:700;letter-spacing:0.3px;}
+.tb-depth{font-family:var(--mono);font-size:0.55rem;padding:3px 10px;border-radius:4px;
+  border:1px solid var(--border);color:var(--muted2);}
+.tb-stats{font-family:var(--mono);font-size:0.55rem;color:var(--muted);margin-left:auto;}
+
+#search{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;
+  padding:6px 12px 6px 28px;color:var(--text);font-family:var(--mono);font-size:0.65rem;
+  width:180px;outline:none;transition:border-color 0.2s;}
+#search:focus{border-color:rgba(0,229,255,0.3);}
+#search::placeholder{color:var(--muted);}
+.si{position:absolute;right:calc(18px + 156px);top:50%;transform:translateY(-50%);
+  font-size:10px;color:var(--muted);pointer-events:none;}
+
+/* ZOOM CONTROLS */
+#zctrl{position:absolute;top:68px;left:14px;pointer-events:all;display:flex;flex-direction:column;gap:4px;}
+.zb{width:28px;height:28px;background:rgba(2,5,8,0.85);border:1px solid var(--border);
+  border-radius:6px;color:var(--muted2);font-size:12px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+.zb:hover{background:rgba(0,229,255,0.07);color:var(--accent);border-color:rgba(0,229,255,0.2);}
+
+/* LEGEND */
+#legend{position:absolute;bottom:16px;left:14px;pointer-events:all;
+  background:rgba(2,5,8,0.88);border:1px solid var(--border);border-radius:12px;
+  padding:12px 14px;backdrop-filter:blur(12px);max-height:calc(100vh - 150px);overflow-y:auto;}
+#legend::-webkit-scrollbar{width:3px;}
+#legend::-webkit-scrollbar-thumb{background:rgba(0,229,255,0.1);}
+.leg-hdr{font-family:var(--mono);font-size:0.52rem;color:var(--muted);
+  text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;}
+.leg-item{display:flex;align-items:center;gap:7px;padding:3px 5px;border-radius:5px;
+  cursor:pointer;transition:background 0.15s;margin-bottom:1px;}
+.leg-item:hover{background:rgba(255,255,255,0.04);}
+.leg-item.active{background:rgba(255,255,255,0.05);}
+.leg-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.leg-lbl{font-size:0.65rem;color:var(--muted2);white-space:nowrap;}
+
+/* LEARNING PATH PANEL */
+#lp-panel{position:absolute;right:0;top:56px;width:290px;height:calc(100vh - 56px);
+  background:rgba(2,5,8,0.92);border-left:1px solid var(--border);
+  padding:18px 16px;overflow-y:auto;pointer-events:all;
+  transform:translateX(100%);transition:transform 0.35s cubic-bezier(0.16,1,0.3,1);}
+#lp-panel::-webkit-scrollbar{width:3px;}
+#lp-panel::-webkit-scrollbar-thumb{background:rgba(0,229,255,0.1);}
+#lp-panel.open{transform:translateX(0);}
+.lp-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.lp-title{font-size:0.85rem;font-weight:700;color:var(--accent);}
+.lp-close{background:transparent;border:none;color:var(--muted2);cursor:pointer;font-size:14px;padding:2px;}
+.lp-intro{font-size:0.68rem;color:var(--muted2);line-height:1.6;margin-bottom:18px;
+  padding-bottom:14px;border-bottom:1px solid var(--border);}
+.lp-step{display:flex;gap:10px;margin-bottom:16px;cursor:pointer;padding:8px;
+  border-radius:8px;transition:background 0.15s;border:1px solid transparent;}
+.lp-step:hover{background:rgba(255,255,255,0.03);}
+.lp-step.active{background:rgba(0,229,255,0.05);border-color:rgba(0,229,255,0.15);}
+.lp-step.done{opacity:0.45;}
+.lp-num{width:22px;height:22px;border-radius:50%;border:1.5px solid;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:0.55rem;font-weight:700;margin-top:1px;}
+.lp-step.active .lp-num{background:rgba(0,229,255,0.1);}
+.lp-step.done .lp-num{background:rgba(105,240,174,0.1);}
+.lp-body{}
+.lp-name{font-size:0.78rem;font-weight:600;margin-bottom:3px;}
+.lp-why{font-size:0.63rem;color:var(--muted2);line-height:1.5;}
+.lp-time{font-family:var(--mono);font-size:0.52rem;color:var(--muted);margin-top:4px;}
+.lp-progress{margin-top:18px;padding-top:14px;border-top:1px solid var(--border);}
+.lp-prog-lbl{font-family:var(--mono);font-size:0.55rem;color:var(--muted2);margin-bottom:6px;}
+.prog-bar{height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));
+  border-radius:2px;transition:width 0.5s;}
+
+/* LP TOGGLE BUTTON */
+#lp-toggle{position:absolute;right:14px;top:68px;pointer-events:all;
+  background:rgba(2,5,8,0.85);border:1px solid var(--border);border-radius:8px;
+  padding:7px 12px;color:var(--muted2);font-family:var(--mono);font-size:0.6rem;
+  cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px;}
+#lp-toggle:hover{border-color:rgba(0,229,255,0.25);color:var(--accent);}
+#lp-toggle.on{border-color:rgba(0,229,255,0.3);background:rgba(0,229,255,0.06);color:var(--accent);}
+
+/* NODE TOOLTIP */
+#ntip{position:absolute;pointer-events:none;width:230px;z-index:50;
+  background:rgba(2,5,8,0.94);border:1px solid rgba(255,255,255,0.07);
+  border-radius:12px;padding:14px;backdrop-filter:blur(16px);
+  opacity:0;transition:opacity 0.15s;top:0;left:0;}
+#ntip.show{opacity:1;}
+.nt-cat{font-family:var(--mono);font-size:0.52rem;text-transform:uppercase;
+  letter-spacing:1px;opacity:0.6;margin-bottom:4px;}
+.nt-name{font-size:0.9rem;font-weight:700;margin-bottom:7px;line-height:1.2;}
+.nt-desc{font-size:0.67rem;color:var(--muted2);line-height:1.6;margin-bottom:9px;}
+.nt-hot{display:inline-flex;align-items:center;gap:3px;font-family:var(--mono);
+  font-size:0.52rem;padding:2px 8px;border-radius:4px;
+  background:rgba(255,107,107,0.1);color:#ff9090;border:1px solid rgba(255,107,107,0.2);}
+.nt-prereq{margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
+.nt-pl{font-family:var(--mono);font-size:0.5rem;color:var(--muted);
+  text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+.nt-ptag{display:inline-block;font-size:0.6rem;padding:2px 7px;border-radius:4px;
+  background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--muted2);
+  margin:2px 2px 0 0;}
+.nt-hint{font-family:var(--mono);font-size:0.5rem;color:var(--muted);margin-top:8px;
+  padding-top:8px;border-top:1px solid var(--border);}
+
+/* HINT */
+#hint-bar{position:absolute;bottom:16px;right:14px;font-family:var(--mono);
+  font-size:0.52rem;color:var(--muted);text-align:right;line-height:2;pointer-events:none;}
+
+/* SVG classes */
+.link{stroke-opacity:0.18;stroke-width:1;fill:none;}
+.link.cross{stroke-opacity:0.1;stroke-dasharray:4,6;}
+.link.hi{stroke-opacity:0.8!important;stroke-width:1.8;}
+.link.dim{stroke-opacity:0.02!important;}
+.node{cursor:pointer;}
+.node.dim{opacity:0.08;}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+
+<!-- ══════════════════════════════════════════
+     SCREEN 1: LANDING
+══════════════════════════════════════════ -->
+<div class="screen" id="s-land">
+  <div class="land-logo">⬡ NEURON</div>
+  <div class="land-tag">// semantic knowledge graph builder</div>
+  <div class="land-card">
+    <div class="lc-label">Topic to explore</div>
+    <input class="lc-input" id="topic-input" placeholder="e.g. Quantum Computing, Stoicism, System Design…" maxlength="80" />
+    <div class="lc-label">Depth level</div>
+    <div class="depth-row">
+      <button class="depth-btn active" data-depth="explorer">
+        <span class="d-icon">🌍</span>
+        <span class="d-name">EXPLORER</span>
+        <span class="d-hint">~15 nodes<br>Big picture</span>
+      </button>
+      <button class="depth-btn" data-depth="practitioner">
+        <span class="d-icon">🔬</span>
+        <span class="d-name">PRACTITIONER</span>
+        <span class="d-hint">~40 nodes<br>Patterns & insights</span>
+      </button>
+      <button class="depth-btn" data-depth="researcher">
+        <span class="d-icon">🧬</span>
+        <span class="d-name">RESEARCHER</span>
+        <span class="d-hint">~80 nodes<br>Cross-domain depth</span>
+      </button>
+    </div>
+    <button class="btn-primary" id="go-prompt">Generate Knowledge Prompt →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN 2: PROMPT + PASTE
+══════════════════════════════════════════ -->
+<div class="screen hidden" id="s-prompt">
+  <div class="prompt-wrap">
+    <div class="pw-hdr">
+      <button class="pw-back" id="back-land">← Back</button>
+      <div>
+        <div class="pw-title">Build map for <span id="pw-topic-name">—</span></div>
+      </div>
+    </div>
+
+    <div class="step-pills">
+      <div class="sp done">✓ Topic defined</div>
+      <div class="sp active">① Copy prompt</div>
+      <div class="sp" id="pill-paste">② Paste result</div>
+      <div class="sp" id="pill-launch">③ Launch map</div>
+    </div>
+
+    <div class="pw-section">
+      <div class="pw-sl">Step 1 — Copy this prompt into any AI (Claude, GPT, Gemini…)</div>
+      <div class="prompt-box" id="gen-prompt"></div>
+      <div class="copy-row">
+        <button class="btn-copy" id="copy-btn">⎘ Copy Prompt</button>
+        <div style="font-family:var(--mono);font-size:0.58rem;color:var(--muted);
+          display:flex;align-items:center;">Works great with:</div>
+        <div class="llm-chips">
+          <div class="llm-chip">Claude</div>
+          <div class="llm-chip">GPT-4</div>
+          <div class="llm-chip">Gemini</div>
+          <div class="llm-chip">Mistral</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pw-section">
+      <div class="pw-sl">Step 2 — Paste the JSON output here</div>
+      <textarea class="paste-area" id="json-paste"
+        placeholder="Paste the full JSON response from the AI here…"></textarea>
+      <div id="val-msg"></div>
+      <div style="margin-top:10px;">
+        <div class="schema-toggle" id="schema-toggle">▸ View expected JSON schema</div>
+        <div class="schema-box" id="schema-box"></div>
+      </div>
+    </div>
+
+    <button class="btn-launch" id="launch-btn" disabled>⬡ Visualize Knowledge Graph →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN 3: GRAPH
+══════════════════════════════════════════ -->
+<div class="screen hidden" id="s-graph">
+  <svg id="graph-svg"></svg>
+  <div id="graph-ui">
+    <div id="topbar">
+      <button class="tb-back" id="graph-back">← New Map</button>
+      <div class="tb-topic" id="tb-topic"></div>
+      <div class="tb-depth" id="tb-depth"></div>
+      <div class="tb-stats" id="tb-stats"></div>
+      <div style="position:relative;">
+        <span class="si">⌕</span>
+        <input id="search" placeholder="Search concepts…" />
+      </div>
+    </div>
+
+    <div id="zctrl">
+      <button class="zb" id="zin">+</button>
+      <button class="zb" id="zout">−</button>
+      <button class="zb" id="zfit" title="Fit">⊡</button>
+    </div>
+
+    <div id="legend">
+      <div class="leg-hdr">Domains</div>
+      <div id="leg-items"></div>
+    </div>
+
+    <button id="lp-toggle">🎓 Learning Path</button>
+
+    <div id="lp-panel">
+      <div class="lp-hdr">
+        <div class="lp-title">🎓 Learning Path</div>
+        <button class="lp-close" id="lp-close">✕</button>
+      </div>
+      <div class="lp-intro" id="lp-intro"></div>
+      <div id="lp-steps"></div>
+      <div class="lp-progress">
+        <div class="lp-prog-lbl" id="prog-lbl">0 / 0 completed</div>
+        <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div id="ntip">
+      <div class="nt-cat" id="nt-cat"></div>
+      <div class="nt-name" id="nt-name"></div>
+      <div class="nt-desc" id="nt-desc"></div>
+      <div class="nt-hot" id="nt-hot" style="display:none">🔥 Key concept</div>
+      <div class="nt-prereq" id="nt-prereq" style="display:none">
+        <div class="nt-pl">Prerequisites</div>
+        <div id="nt-pre-tags"></div>
+      </div>
+      <div class="nt-hint">Click to focus connections</div>
+    </div>
+
+    <div id="hint-bar">drag to pan · scroll to zoom<br>hover to preview · click to focus</div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// STARS
+// ══════════════════════════════════════════
+const sc = document.getElementById('stars');
+const cx = sc.getContext('2d');
+let stars=[];
+function mkStars(){
+  sc.width=innerWidth; sc.height=innerHeight;
+  stars=Array.from({length:180},()=>({x:Math.random()*sc.width,y:Math.random()*sc.height,
+    r:Math.random()*1.2,t:Math.random()*Math.PI*2,s:0.001+Math.random()*0.002}));
+}
+function drawStars(){
+  cx.fillStyle='#020508'; cx.fillRect(0,0,sc.width,sc.height);
+  stars.forEach(s=>{s.t+=s.s;const a=0.1+0.3*Math.abs(Math.sin(s.t));
+    cx.beginPath();cx.arc(s.x,s.y,s.r,0,Math.PI*2);cx.fillStyle=`rgba(180,210,255,${a})`;cx.fill();});
+  requestAnimationFrame(drawStars);
+}
+mkStars(); drawStars();
+window.addEventListener('resize',mkStars);
+
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let appState = {
+  topic: '',
+  depth: 'explorer',
+  data: null,
+  completedSteps: new Set(),
+  activeNode: null
+};
+
+// ══════════════════════════════════════════
+// SCHEMA
+// ══════════════════════════════════════════
+const SCHEMA_DISPLAY = `{
+  "topic": "string",
+  "depth": "explorer | practitioner | researcher",
+  "summary": "string — 2-3 sentences. What is the shape of this knowledge? What will the learner see when they look at this map?",
+
+  "categories": [
+    {
+      "id": "string",
+      "label": "string",
+      "color": "#hex — must be readable on #020508 background",
+      "icon": "single emoji",
+      "description": "string — one sentence: what kind of concepts live here?"
+    }
+  ],
+
+  "nodes": [
+    {
+      "id": "string — lowercase_underscores_only",
+      "label": "string — short display name (max 4 words)",
+      "category": "category_id",
+      "hot": boolean,
+      "depth_level": 1 | 2 | 3,
+      "description": "string — mentor-style explanation, why this matters HERE",
+      "prerequisites": ["node_id"],
+      "analogy": "string (optional) — 'This is like X in the context of Y' — use for hard concepts"
+    }
+  ],
+
+  "links": [
+    {
+      "source": "node_id",
+      "target": "node_id",
+      "relation": "one of the 11 relation types above",
+      "type": "hierarchical | semantic | cross_domain",
+      "weight": 1 | 2 | 3,
+      "label": "string (optional) — 3-5 words describing the connection, shown on hover"
+    }
+  ],
+
+  "learningPath": [
+    {
+      "nodeId": "node_id",
+      "order": number,
+      "phase": "string — group name (e.g. 'Foundations', 'Core Mechanics', 'Advanced Patterns', 'Synthesis')",
+      "reason": "string — why learn THIS concept at THIS moment in the journey",
+      "estimatedMinutes": number,
+      "keyInsight": "string — the single sentence this node should leave in the learner's mind"
+    }
+  ],
+
+  "metadata": {
+    "totalConcepts": number,
+    "totalLinks": number,
+    "crossDomainInsights": [
+      "string — 2-3 sentence observation connecting this topic to a surprising other domain"
+    ],
+    "suggestedNextTopics": ["string"],
+    "commonMisconceptions": [
+      "string — belief many beginners hold that this map should correct"
+    ],
+    "centralNode": "node_id — the single node that, if removed, would disconnect the most of the graph"
+  }
+}`;
+
+document.getElementById('schema-box').textContent = SCHEMA_DISPLAY;
+
+// ══════════════════════════════════════════
+// PROMPT GENERATION
+// ══════════════════════════════════════════
+function buildPrompt(topic, depth) {
+return `╔══════════════════════════════════════════════════════════════════════════════════╗
+║                     NEURON — SEMANTIC KNOWLEDGE GRAPH PROMPT                     ║
+║                              Model-Agnostic v1.0                                 ║
+╚══════════════════════════════════════════════════════════════════════════════════╝
+
+You are a Semantic Knowledge Cartographer.
+
+Your task is to map the topic below as a LIVING KNOWLEDGE GRAPH — the way an expert
+mind actually stores and retrieves understanding. Not a textbook index. Not a Wikipedia
+outline. A semantic web where every concept lives at the correct distance from every
+other concept, connected by the invisible threads of meaning.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TOPIC:     ${topic}
+DEPTH:     ${depth}   [ explorer = 12-18 nodes | practitioner = 30-45 nodes | researcher = 60-90 nodes ]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PHILOSOPHY — READ THIS BEFORE GENERATING ANYTHING:
+
+  The human brain encodes knowledge through SEMANTIC PROXIMITY.
+  Things that mean similar things cluster together in memory.
+  Things that are USED together or FEEL similar also pull toward each other —
+  even across completely different domains.
+
+  This is why:
+  → Entropy (thermodynamics) and Uncertainty (information theory) feel like the same idea
+  → Stoic resilience and Antifragility (Taleb) and Buddhist non-attachment are the same concept in different clothes
+  → Eigenvectors (linear algebra) and Principal Components (statistics) and Latent Space (ML) are one idea at different zoom levels
+
+  Your graph must reflect this. Categories are just loose gravity wells.
+  MEANING is what pulls nodes together. The force simulation will do the spatial work —
+  your job is to encode the WEIGHT and NATURE of every connection correctly.
+
+  A good graph should let a beginner see the shape of the territory before they
+  enter it. A great graph should show an expert something they hadn't consciously
+  connected before.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DEPTH GUIDELINES:
+
+  EXPLORER (12-18 nodes)
+  → The 10,000 ft view. What are the 5-6 gravity wells of this topic?
+  → Every node must be something a beginner needs to know EXISTS before they can learn anything else
+  → Links are mostly structural — what feeds into what
+  → Learning path = the order a great teacher would introduce these ideas in a first lecture
+  → Minimum 2 cross-domain bridges (concepts that live in other fields but are the SAME idea)
+
+  PRACTITIONER (30-45 nodes)
+  → The working map. What does someone need to actually USE this knowledge?
+  → Include: patterns, failure modes, trade-offs, and the "hidden" concepts that tutorials skip
+  → Links include contrast (X vs Y, they live close because comparison is how the brain learns them together)
+  → At least 5 cross-domain bridges
+  → Learning path should have clear "unlock" moments — nodes that suddenly make 3 others make sense
+
+  RESEARCHER (60-90 nodes)
+  → The full territory including the edges and the fog
+  → Include: historical origins, dead-ends, open questions, minority viewpoints, and the surprising bridges
+  → At least 15 cross-domain bridges — this is where quantum physics meets philosophy, where thermodynamics meets information theory
+  → Some nodes should represent things still debated or unknown (mark depth_level: 3)
+  → Learning path is a genuine curriculum with phases, not just a sequence
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LINK TYPES — THIS IS THE MOST IMPORTANT PART:
+
+  Every link must have a "relation" that describes the SEMANTIC NATURE of the connection.
+  This is what makes the graph feel like a mind, not a flowchart.
+
+  Use exactly one of these values for the "relation" field:
+
+  "feeds_into"      → A is required to understand B (prerequisite, foundational)
+  "is_a_type_of"    → A is a specific case of B (taxonomy — use sparingly)
+  "contrasts_with"  → A and B are best understood as a pair/opposition (e.g. synchronous vs async)
+  "enables"         → Understanding A makes B dramatically easier to learn
+  "is_analog_of"    → A and B are the same concept in different domains (cross-domain bridge)
+  "emerges_from"    → B is a surprising consequence or property that arises from A
+  "is_applied_as"   → A in theory becomes B in practice
+  "historically_led_to" → A came before B and caused or inspired it (researcher depth)
+  "is_often_confused_with" → A and B are frequently mixed up — this link is a warning
+  "is_the_inverse_of"  → A and B are mirror operations (e.g. encoding/decoding, encryption/decryption)
+  "shares_structure_with" → A and B have the same underlying shape/pattern (deep analogy)
+
+  Link weight controls VISUAL DISTANCE in the simulation:
+  weight: 3 = very close (almost the same thing)
+  weight: 2 = clearly related
+  weight: 1 = connected but distant
+
+  The "is_analog_of" and "shares_structure_with" links are the most valuable.
+  They are the ones that create "I never thought of it that way" moments.
+  Prioritize them. They are rarely obvious.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+NODE DESCRIPTIONS — HOW TO WRITE THEM:
+
+  A node description is NOT a dictionary definition.
+  It is a one-sentence answer to: "Why does this matter in the context of ${topic}?"
+
+  BAD:  "Entropy is a measure of disorder in a thermodynamic system."
+  GOOD: "Entropy is why complex systems naturally drift toward chaos — understanding
+         it tells you why maintaining any ordered system requires constant energy."
+
+  BAD:  "A load balancer distributes incoming network traffic across servers."
+  GOOD: "A load balancer is the traffic cop that prevents any single server from
+         becoming the bottleneck that takes down your whole system."
+
+  The description should create a MENTAL HOOK — something the user can attach
+  future knowledge to. Write it the way a mentor would explain it, not a textbook.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LEARNING PATH — HOW TO ORDER IT:
+
+  The learning path is not just topological sort of prerequisites.
+  It is a PEDAGOGICAL SEQUENCE — the order that minimizes confusion and maximizes
+  the number of "aha" moments.
+
+  Rules for ordering:
+  1. Start with the concept that gives the most CONTEXT for everything else
+     (often not the simplest concept, but the one that makes others make sense)
+  2. Concrete before abstract. Examples before theory.
+  3. Group nodes that are best learned as a pair (contrasts_with links) — learn them in sequence
+  4. "Unlock" nodes first — a node that has 3+ dependents should come early
+  5. End with the nodes that integrate everything (synthesis nodes, or applied nodes)
+
+  For each step, the "reason" field must answer:
+  "Why NOW? What does learning this HERE unlock that learning it earlier or later wouldn't?"
+
+  estimatedMinutes should reflect genuine cognitive effort:
+  → Simple factual node: 5-10 min
+  → Conceptual node requiring examples: 15-25 min
+  → Deep node requiring practice: 30-60 min
+  → Cross-domain insight node: 20-40 min (these take time to land)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CATEGORY COLORS — GUIDELINES:
+
+  Colors should feel semantically appropriate, not random:
+  → Foundation/structural concepts: cool blues (#4fc3f7, #00b8d4)
+  → Dynamic/process concepts: warm ambers/oranges (#ffb74d, #ff9a3c)
+  → Abstract/theoretical concepts: purples (#c77dff, #9c64ff)
+  → Applied/practical concepts: greens (#69f0ae, #a8ff78)
+  → Warning/tricky concepts: reds/pinks (#ff6b6b, #f48fb1)
+  → Meta/philosophical concepts: cyans (#00e5ff, #80deea)
+
+  Colors must be distinct enough to read on a very dark (#020508) background.
+  Do NOT use colors darker than #558 in any channel.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CROSS-DOMAIN INSIGHT GUIDELINES:
+
+  The "crossDomainInsights" in metadata should be 2-3 sentence observations that
+  a knowledgeable generalist would find genuinely illuminating.
+
+  BAD:  "Quantum computing is related to physics."
+  GOOD: "The concept of superposition in quantum computing is structurally identical
+         to how a neural network holds probabilistic activations before a decision
+         boundary — both are systems that exist in multiple states until forced to commit."
+
+  These insights are what elevate the map from reference material to genuine education.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+HARD RULES (violations will break the application):
+
+  R1. Output ONLY valid JSON. No prose. No markdown. No \`\`\`json fences. Start with { end with }
+  R2. All node "id" values: lowercase, underscores only, globally unique, max 30 chars
+  R3. Every link "source" and "target" must exactly match an existing node id
+  R4. Every "prerequisites" entry must exactly match an existing node id
+  R5. Every "learningPath" entry "nodeId" must exactly match an existing node id
+  R6. "hot" nodes must not exceed 30% of total nodes (mark only the truly critical ones)
+  R7. depth_level values: 1 = foundational, 2 = intermediate, 3 = advanced/frontier
+  R8. Every category must have at least 2 nodes assigned to it
+  R9. "relation" must be one of the 11 values defined above — no custom values
+  R10. Do not repeat the same node id in learningPath more than once
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+OUTPUT JSON SCHEMA (follow exactly):
+
+${SCHEMA_DISPLAY}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BEFORE YOU OUTPUT: Ask yourself:
+  ✦ Does this map feel like how an expert THINKS about this topic, or like a Wikipedia outline?
+  ✦ Are the cross-domain bridges genuinely surprising and insightful?
+  ✦ Would a beginner be able to trace the learning path and feel it was the right order?
+  ✦ Do the node descriptions create mental hooks, or just define terms?
+  ✦ Does every link have a reason to exist, or are some just there to fill space?
+
+If any answer is "no" — revise before outputting.
+
+NOW OUTPUT THE JSON FOR: ${topic} at ${depth} depth.`;
+}
+
+// ══════════════════════════════════════════
+// SCHEMA VALIDATION
+// ══════════════════════════════════════════
+function validateSchema(data) {
+  const errors = [];
+
+  if (!data.topic) errors.push('Missing: topic');
+  if (!data.depth) errors.push('Missing: depth');
+  if (!data.summary) errors.push('Missing: summary');
+
+  if (!Array.isArray(data.categories) || data.categories.length < 2)
+    errors.push('categories: must be array with 2+ items');
+
+  if (!Array.isArray(data.nodes) || data.nodes.length < 5)
+    errors.push('nodes: must be array with 5+ items');
+
+  if (!Array.isArray(data.links) || data.links.length < 3)
+    errors.push('links: must be array with 3+ items');
+
+  if (!Array.isArray(data.learningPath) || data.learningPath.length < 1)
+    errors.push('learningPath: must be non-empty array');
+
+  if (errors.length) return { ok: false, errors };
+
+  const nodeIds = new Set(data.nodes.map(n => n.id));
+  const catIds = new Set(data.categories.map(c => c.id));
+
+  data.nodes.forEach((n, i) => {
+    if (!n.id || /\s/.test(n.id)) errors.push(`nodes[${i}]: id "${n.id}" has spaces`);
+    if (!n.label) errors.push(`nodes[${i}]: missing label`);
+    if (!catIds.has(n.category)) errors.push(`nodes[${i}] "${n.id}": category "${n.category}" not found`);
+    if (n.prerequisites) n.prerequisites.forEach(p => {
+      if (!nodeIds.has(p)) errors.push(`nodes[${i}] "${n.id}": prerequisite "${p}" not found`);
+    });
+  });
+
+  data.links.forEach((l, i) => {
+    if (!nodeIds.has(l.source)) errors.push(`links[${i}]: source "${l.source}" not found`);
+    if (!nodeIds.has(l.target)) errors.push(`links[${i}]: target "${l.target}" not found`);
+  });
+
+  data.learningPath.forEach((lp, i) => {
+    if (!nodeIds.has(lp.nodeId)) errors.push(`learningPath[${i}]: nodeId "${lp.nodeId}" not found`);
+  });
+
+  if (errors.length) return { ok: false, errors };
+  return { ok: true, errors: [] };
+}
+
+// ══════════════════════════════════════════
+// SCREEN 1: LANDING
+// ══════════════════════════════════════════
+document.querySelectorAll('.depth-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.depth-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    appState.depth = btn.dataset.depth;
+  });
+});
+
+document.getElementById('go-prompt').addEventListener('click', () => {
+  const topic = document.getElementById('topic-input').value.trim();
+  if (!topic) {
+    document.getElementById('topic-input').style.borderColor = 'rgba(255,107,107,0.5)';
+    setTimeout(() => document.getElementById('topic-input').style.borderColor = '', 1500);
+    return;
+  }
+  appState.topic = topic;
+  goToPromptScreen();
+});
+
+document.getElementById('topic-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('go-prompt').click();
+});
+
+// ══════════════════════════════════════════
+// SCREEN 2: PROMPT
+// ══════════════════════════════════════════
+function goToPromptScreen() {
+  document.getElementById('s-land').classList.add('hidden');
+  document.getElementById('s-prompt').classList.remove('hidden');
+  document.getElementById('pw-topic-name').textContent = `"${appState.topic}"`;
+  document.getElementById('gen-prompt').textContent = buildPrompt(appState.topic, appState.depth);
+  document.getElementById('val-msg').style.display = 'none';
+  document.getElementById('json-paste').value = '';
+  document.getElementById('launch-btn').disabled = true;
+}
+
+document.getElementById('back-land').addEventListener('click', () => {
+  document.getElementById('s-prompt').classList.add('hidden');
+  document.getElementById('s-land').classList.remove('hidden');
+});
+
+document.getElementById('copy-btn').addEventListener('click', () => {
+  const txt = document.getElementById('gen-prompt').textContent;
+  navigator.clipboard.writeText(txt).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = '✓ Copied!';
+    btn.classList.add('copied');
+    document.getElementById('pill-paste').classList.add('active');
+    setTimeout(() => { btn.textContent = '⎘ Copy Prompt'; btn.classList.remove('copied'); }, 2500);
+  });
+});
+
+document.getElementById('schema-toggle').addEventListener('click', () => {
+  const box = document.getElementById('schema-box');
+  const tog = document.getElementById('schema-toggle');
+  const open = box.style.display === 'block';
+  box.style.display = open ? 'none' : 'block';
+  tog.textContent = (open ? '▸' : '▾') + ' View expected JSON schema';
+});
+
+let validateTimeout;
+document.getElementById('json-paste').addEventListener('input', function() {
+  clearTimeout(validateTimeout);
+  validateTimeout = setTimeout(() => validatePaste(this.value), 500);
+});
+
+function validatePaste(raw) {
+  const vm = document.getElementById('val-msg');
+  const btn = document.getElementById('launch-btn');
+  vm.style.display = 'none';
+  btn.disabled = true;
+
+  const txt = raw.trim();
+  if (!txt) return;
+
+  // Try stripping markdown fences
+  const cleaned = txt.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim();
+
+  let parsed;
+  try { parsed = JSON.parse(cleaned); }
+  catch(e) {
+    vm.className = 'err'; vm.style.display = 'block';
+    vm.textContent = `✗ Invalid JSON: ${e.message.substring(0, 80)}`;
+    return;
+  }
+
+  const result = validateSchema(parsed);
+  if (!result.ok) {
+    vm.className = 'err'; vm.style.display = 'block';
+    vm.textContent = `✗ Schema errors:\n${result.errors.slice(0,4).join('\n')}${result.errors.length>4?`\n…+${result.errors.length-4} more`:''}`;
+    return;
+  }
+
+  appState.data = parsed;
+  vm.className = 'ok'; vm.style.display = 'block';
+  vm.textContent = `✓ Valid! ${parsed.nodes.length} nodes · ${parsed.links.length} links · ${parsed.learningPath.length} learning steps`;
+  btn.disabled = false;
+  document.getElementById('pill-launch').classList.add('active');
+}
+
+document.getElementById('launch-btn').addEventListener('click', () => {
+  if (!appState.data) return;
+  document.getElementById('s-prompt').classList.add('hidden');
+  document.getElementById('s-graph').classList.remove('hidden');
+  buildGraph(appState.data);
+});
+
+// ══════════════════════════════════════════
+// GRAPH ENGINE
+// ══════════════════════════════════════════
+let simulation, zoomBehavior, gSel;
+
+function buildGraph(data) {
+  const W = innerWidth, H = innerHeight;
+
+  // Topbar
+  document.getElementById('tb-topic').textContent = data.topic;
+  document.getElementById('tb-depth').textContent = data.depth.toUpperCase();
+  document.getElementById('tb-stats').textContent = `${data.nodes.length} nodes · ${data.links.length} synapses`;
+
+  // Color map
+  const catColor = Object.fromEntries(data.categories.map(c => [c.id, c.color]));
+  const catIcon  = Object.fromEntries(data.categories.map(c => [c.id, c.icon]));
+  const nodeMap  = Object.fromEntries(data.nodes.map(n => [n.id, n]));
+
+  // Build D3 nodes/links
+  const rootNode = { id:'__root__', label: data.topic, type:'root', color:'#cceeff' };
+  const catNodes = data.categories.map(c => ({...c, type:'category', color:c.color}));
+  const conceptNodes = data.nodes.map(n => ({
+    ...n, type:'concept', color: catColor[n.category] || '#aaa'
+  }));
+  const allNodes = [rootNode, ...catNodes, ...conceptNodes];
+  const nById = Object.fromEntries(allNodes.map(n => [n.id, n]));
+
+  const rootLinks = data.categories.map(c => ({source:'__root__', target:c.id, kind:'h'}));
+  const catLinks  = data.nodes.map(n => ({source:n.category, target:n.id, kind:'h'}));
+  const dataLinks = data.links.map(l => ({...l, kind: l.type==='hierarchical'?'h':'x'}));
+  const allLinks  = [...rootLinks, ...catLinks, ...dataLinks];
+
+  // Clear old graph
+  const svgEl = document.getElementById('graph-svg');
+  d3.select(svgEl).selectAll('*').remove();
+  svgEl.setAttribute('width', W); svgEl.setAttribute('height', H);
+
+  const svg = d3.select(svgEl);
+  const defs = svg.append('defs');
+
+  // Glow filters
+  data.categories.forEach((c,i) => {
+    const f = defs.append('filter').attr('id',`gf${i}`)
+      .attr('x','-80%').attr('y','-80%').attr('width','260%').attr('height','260%');
+    f.append('feGaussianBlur').attr('stdDeviation','5').attr('result','blur');
+    const m = f.append('feMerge');
+    m.append('feMergeNode').attr('in','blur');
+    m.append('feMergeNode').attr('in','SourceGraphic');
+  });
+  const rf = defs.append('filter').attr('id','gfroot')
+    .attr('x','-100%').attr('y','-100%').attr('width','300%').attr('height','300%');
+  rf.append('feGaussianBlur').attr('stdDeviation','12').attr('result','blur');
+  const rm = rf.append('feMerge');
+  rm.append('feMergeNode').attr('in','blur');
+  rm.append('feMergeNode').attr('in','SourceGraphic');
+
+  const catFilterIdx = Object.fromEntries(data.categories.map((c,i) => [c.id, i]));
+
+  gSel = svg.append('g');
+  zoomBehavior = d3.zoom().scaleExtent([0.08, 4])
+    .on('zoom', e => gSel.attr('transform', e.transform));
+  svg.call(zoomBehavior);
+
+  const lG = gSel.append('g');
+  const nG = gSel.append('g');
+
+  // Simulation
+  simulation = d3.forceSimulation(allNodes)
+    .force('link', d3.forceLink(allLinks).id(d=>d.id)
+      .distance(d => {
+        if (d.kind==='x') return 180;
+        const st = d.source.type||'concept';
+        return st==='root' ? 220 : 80;
+      })
+      .strength(d => {
+        if (d.kind==='x') return 0.01;
+        const st = d.source.type||'concept';
+        return st==='root' ? 0.25 : 0.5;
+      })
+    )
+    .force('charge', d3.forceManyBody().strength(d => {
+      if (d.type==='root') return -2800;
+      if (d.type==='category') return -600;
+      return -120;
+    }))
+    .force('center', d3.forceCenter(W/2, H/2).strength(0.05))
+    .force('collide', d3.forceCollide().radius(d =>
+      d.type==='root'?60 : d.type==='category'?50 : 35
+    ));
+
+  // Links
+  const LE = lG.selectAll('line').data(allLinks).join('line')
+    .attr('class', d => `link${d.kind==='x'?' cross':''}`)
+    .attr('stroke', d => {
+      const t = nById[typeof d.target==='object'?d.target.id:d.target];
+      return t?.color || '#888';
+    });
+
+  // Nodes
+  const NE = nG.selectAll('g.node').data(allNodes).join('g')
+    .attr('class','node')
+    .call(d3.drag()
+      .on('start',(e,d)=>{ if(!e.active) simulation.alphaTarget(0.3).restart(); d.fx=d.x;d.fy=d.y; })
+      .on('drag',(e,d)=>{ d.fx=e.x;d.fy=e.y; })
+      .on('end',(e,d)=>{ if(!e.active) simulation.alphaTarget(0); d.fx=null;d.fy=null; })
+    );
+
+  // Pulse rings on hot nodes
+  NE.filter(d=>d.hot).append('circle')
+    .attr('fill','none').attr('stroke',d=>d.color)
+    .attr('stroke-width',0.7).attr('r',8).attr('opacity',0)
+    .each(function(d){
+      const el=d3.select(this); const delay=Math.random()*4000;
+      function pulse(){el.attr('r',8).attr('opacity',0.55)
+        .transition().duration(2200).attr('r',28).attr('opacity',0).on('end',pulse);}
+      setTimeout(pulse,delay);
+    });
+
+  // Main circles
+  NE.append('circle')
+    .attr('r', d => d.type==='root'?30:d.type==='category'?17:7)
+    .attr('fill', d => d.type==='root'?'rgba(200,240,255,0.06)':d.color+'14')
+    .attr('stroke', d=>d.color).attr('stroke-width',d=>d.type==='root'?2:d.type==='category'?1.5:1)
+    .attr('filter', d => {
+      if(d.type==='root') return 'url(#gfroot)';
+      const ci = d.type==='category' ? catFilterIdx[d.id] : catFilterIdx[d.category];
+      return ci!=null?`url(#gf${ci})`:null;
+    });
+
+  // Inner dot (concepts)
+  NE.filter(d=>d.type==='concept').append('circle')
+    .attr('r',2.2).attr('fill',d=>d.color).attr('opacity',0.85);
+
+  // Category icon
+  NE.filter(d=>d.type==='category').append('text')
+    .attr('text-anchor','middle').attr('dy','0.35em')
+    .attr('font-size','10px').text(d=>d.icon||'○');
+
+  // Category label
+  NE.filter(d=>d.type==='category').append('text')
+    .attr('text-anchor','middle').attr('dy','30px')
+    .attr('font-size','7.5px').attr('font-weight','700')
+    .attr('letter-spacing','0.7px').attr('fill',d=>d.color).attr('opacity',0.8)
+    .text(d=>d.label.toUpperCase());
+
+  // Root text
+  NE.filter(d=>d.type==='root').append('text')
+    .attr('text-anchor','middle').attr('dy','-3px')
+    .attr('font-size','6.5px').attr('font-weight','800')
+    .attr('fill','#cce8f4').attr('letter-spacing','1px')
+    .text(d => d.label.length > 12 ? d.label.substring(0,10)+'…' : d.label);
+
+  // Concept label
+  NE.filter(d=>d.type==='concept').append('text')
+    .attr('text-anchor','middle').attr('dy','-12px')
+    .attr('font-size','7px').attr('fill',d=>d.color).attr('opacity',0.6)
+    .text(d=>d.label);
+
+  // Tick
+  simulation.on('tick',()=>{
+    LE.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y)
+      .attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+    NE.attr('transform',d=>`translate(${d.x},${d.y})`);
+  });
+
+  // ── HOVER TOOLTIP ──
+  const tip = document.getElementById('ntip');
+  NE.on('mouseover', (e, d) => {
+    if (d.type==='root') return;
+    const cat = data.categories.find(c=>c.id===(d.type==='category'?d.id:d.category));
+    document.getElementById('nt-cat').textContent = (cat?.label||'').toUpperCase();
+    document.getElementById('nt-cat').style.color = d.color;
+    document.getElementById('nt-name').textContent = d.label;
+    document.getElementById('nt-name').style.color = d.color;
+    document.getElementById('nt-desc').textContent = d.description || 'A key concept in this domain.';
+    const hotEl = document.getElementById('nt-hot');
+    hotEl.style.display = d.hot ? 'inline-flex' : 'none';
+    const preEl = document.getElementById('nt-prereq');
+    const preTags = document.getElementById('nt-pre-tags');
+    const prereqs = d.prerequisites?.filter(p=>p) || [];
+    if (prereqs.length) {
+      preTags.innerHTML = prereqs.map(p => {
+        const pn = nodeMap[p];
+        return `<span class="nt-ptag">${pn?.label||p}</span>`;
+      }).join('');
+      preEl.style.display = 'block';
+    } else { preEl.style.display = 'none'; }
+
+    tip.classList.add('show');
+    moveTip(e);
+  })
+  .on('mousemove', moveTip)
+  .on('mouseout', () => tip.classList.remove('show'));
+
+  function moveTip(e) {
+    let x = e.clientX + 16, y = e.clientY - 10;
+    if (x + 240 > innerWidth) x = e.clientX - 250;
+    if (y + 200 > innerHeight) y = e.clientY - 210;
+    tip.style.left = x+'px'; tip.style.top = y+'px';
+  }
+
+  // ── CLICK FOCUS ──
+  let activeNode = null;
+  NE.on('click', (e, d) => {
+    e.stopPropagation();
+    if (activeNode===d.id) { clearFocus(); return; }
+    activeNode = d.id;
+
+    const conn = new Set([d.id]);
+    allLinks.forEach(l => {
+      const s=typeof l.source==='object'?l.source.id:l.source;
+      const t=typeof l.target==='object'?l.target.id:l.target;
+      if(s===d.id) conn.add(t);
+      if(t===d.id) conn.add(s);
+    });
+    if(d.type==='concept'&&d.category) conn.add(d.category);
+    if(d.type==='category') conceptNodes.filter(c=>c.category===d.id).forEach(c=>conn.add(c.id));
+
+    NE.classed('dim', n => !conn.has(n.id));
+    LE.classed('hi', l => {
+      const s=typeof l.source==='object'?l.source.id:l.source;
+      const t=typeof l.target==='object'?l.target.id:l.target;
+      return s===d.id||t===d.id;
+    }).classed('dim', l => {
+      const s=typeof l.source==='object'?l.source.id:l.source;
+      const t=typeof l.target==='object'?l.target.id:l.target;
+      return !(s===d.id||t===d.id);
+    });
+
+    // Highlight learning path step
+    highlightLpStep(d.id);
+  });
+
+  svg.on('click', clearFocus);
+
+  function clearFocus(){
+    activeNode=null;
+    NE.classed('dim',false).classed('hi',false);
+    LE.classed('hi',false).classed('dim',false);
+    document.querySelectorAll('.lp-step').forEach(el=>el.classList.remove('active'));
+  }
+
+  // ── LEGEND ──
+  const legEl = document.getElementById('leg-items');
+  legEl.innerHTML = '';
+  data.categories.forEach(cat => {
+    const item = document.createElement('div');
+    item.className='leg-item';
+    item.innerHTML=`<div class="leg-dot" style="background:${cat.color};box-shadow:0 0 4px ${cat.color}66"></div><span class="leg-lbl">${cat.icon||''} ${cat.label}</span>`;
+    item.addEventListener('click',()=>{
+      const members=new Set([cat.id,'__root__']);
+      conceptNodes.filter(c=>c.category===cat.id).forEach(c=>members.add(c.id));
+      NE.classed('dim',n=>!members.has(n.id)).classed('hi',n=>members.has(n.id)&&n.type!=='root');
+      LE.classed('dim',l=>{
+        const s=typeof l.source==='object'?l.source.id:l.source;
+        const t=typeof l.target==='object'?l.target.id:l.target;
+        return !(members.has(s)||members.has(t));
+      }).classed('hi',false);
+      document.querySelectorAll('.leg-item').forEach(el=>el.classList.remove('active'));
+      item.classList.add('active');
+    });
+    legEl.appendChild(item);
+  });
+
+  // ── SEARCH ──
+  document.getElementById('search').addEventListener('input', function(){
+    const q=this.value.toLowerCase().trim();
+    if(!q){ clearFocus(); return; }
+    const hits=new Set();
+    allNodes.forEach(n=>{ if(n.label.toLowerCase().includes(q)) hits.add(n.id); });
+    const nearby=new Set(hits);
+    allLinks.forEach(l=>{
+      const s=typeof l.source==='object'?l.source.id:l.source;
+      const t=typeof l.target==='object'?l.target.id:l.target;
+      if(hits.has(s)) nearby.add(t);
+      if(hits.has(t)) nearby.add(s);
+    });
+    NE.classed('dim',n=>!nearby.has(n.id)).classed('hi',n=>hits.has(n.id));
+    LE.classed('hi',l=>{
+      const s=typeof l.source==='object'?l.source.id:l.source;
+      const t=typeof l.target==='object'?l.target.id:l.target;
+      return hits.has(s)||hits.has(t);
+    }).classed('dim',l=>{
+      const s=typeof l.source==='object'?l.source.id:l.source;
+      const t=typeof l.target==='object'?l.target.id:l.target;
+      return !nearby.has(s)&&!nearby.has(t);
+    });
+  });
+
+  // ── ZOOM ──
+  function fit(){
+    svg.attr('width',innerWidth).attr('height',innerHeight);
+    svg.transition().duration(700).call(zoomBehavior.transform,
+      d3.zoomIdentity.translate(innerWidth/2,innerHeight/2).scale(0.6).translate(-W/2,-H/2));
+  }
+  document.getElementById('zin').onclick=()=>svg.transition().call(zoomBehavior.scaleBy,1.35);
+  document.getElementById('zout').onclick=()=>svg.transition().call(zoomBehavior.scaleBy,0.74);
+  document.getElementById('zfit').onclick=fit;
+  setTimeout(fit,300);
+
+  // ── LEARNING PATH ──
+  buildLearningPath(data, nodeMap, catColor);
+
+  window.addEventListener('resize',()=>{
+    svg.attr('width',innerWidth).attr('height',innerHeight);
+    simulation.force('center',d3.forceCenter(innerWidth/2,innerHeight/2));
+    simulation.alpha(0.1).restart();
+  });
+}
+
+// ══════════════════════════════════════════
+// LEARNING PATH
+// ══════════════════════════════════════════
+function buildLearningPath(data, nodeMap, catColor) {
+  const stepsEl = document.getElementById('lp-steps');
+  const introEl = document.getElementById('lp-intro');
+  stepsEl.innerHTML = '';
+  appState.completedSteps.clear();
+
+  introEl.textContent = data.summary || `A structured path through ${data.topic}. Complete steps in order for the best learning experience.`;
+
+  const sorted = [...data.learningPath].sort((a,b)=>a.order-b.order);
+
+  sorted.forEach((step, idx) => {
+    const node = nodeMap[step.nodeId];
+    if (!node) return;
+    const color = catColor[node.category] || '#aaa';
+
+    const el = document.createElement('div');
+    el.className = 'lp-step';
+    el.id = `lps-${step.nodeId}`;
+    el.innerHTML = `
+      <div class="lp-num" style="border-color:${color};color:${color}">${step.order}</div>
+      <div class="lp-body">
+        <div class="lp-name" style="color:${color}">${node.label}</div>
+        <div class="lp-why">${step.reason || 'Core concept for this topic.'}</div>
+        <div class="lp-time">~${step.estimatedMinutes||10} min</div>
+      </div>`;
+
+    el.addEventListener('click', () => {
+      el.classList.toggle('done');
+      if (el.classList.contains('done')) {
+        appState.completedSteps.add(step.nodeId);
+      } else {
+        appState.completedSteps.delete(step.nodeId);
+      }
+      updateProgress(sorted.length);
+    });
+
+    stepsEl.appendChild(el);
+  });
+
+  updateProgress(sorted.length);
+}
+
+function updateProgress(total) {
+  const done = appState.completedSteps.size;
+  const pct = total ? Math.round(done/total*100) : 0;
+  document.getElementById('prog-lbl').textContent = `${done} / ${total} completed`;
+  document.getElementById('prog-fill').style.width = pct+'%';
+}
+
+function highlightLpStep(nodeId) {
+  document.querySelectorAll('.lp-step').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById(`lps-${nodeId}`);
+  if (el) {
+    el.classList.add('active');
+    if (document.getElementById('lp-panel').classList.contains('open')) {
+      el.scrollIntoView({ behavior:'smooth', block:'nearest' });
+    }
+  }
+}
+
+// ── LP PANEL TOGGLE ──
+document.getElementById('lp-toggle').addEventListener('click', () => {
+  const panel = document.getElementById('lp-panel');
+  const btn = document.getElementById('lp-toggle');
+  panel.classList.toggle('open');
+  btn.classList.toggle('on');
+});
+document.getElementById('lp-close').addEventListener('click', () => {
+  document.getElementById('lp-panel').classList.remove('open');
+  document.getElementById('lp-toggle').classList.remove('on');
+});
+
+// ── GRAPH BACK ──
+document.getElementById('graph-back').addEventListener('click', () => {
+  if (simulation) simulation.stop();
+  document.getElementById('lp-panel').classList.remove('open');
+  document.getElementById('s-graph').classList.add('hidden');
+  document.getElementById('s-land').classList.remove('hidden');
+  document.getElementById('topic-input').value = '';
+});
+
+// ══════════════════════════════════════════
+// DEMO DATA (load without pasting)
+// ══════════════════════════════════════════
+// Uncomment to test without LLM:
+// window.addEventListener('load', () => { ... });
+</script>
+</body>
+</html>
