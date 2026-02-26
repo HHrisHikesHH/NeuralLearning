@@ -117,6 +117,11 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);width:100vw;
   margin-top:8px;display:none;}
 #val-msg.ok{background:rgba(105,240,174,0.08);border:1px solid rgba(105,240,174,0.25);color:var(--green);}
 #val-msg.err{background:rgba(255,107,107,0.08);border:1px solid rgba(255,107,107,0.25);color:var(--red);}
+.val-err-calm{margin:0 0 8px;font-family:inherit;font-size:0.62rem;color:var(--muted2);line-height:1.5;}
+.val-err-pre{margin:0 0 10px;padding:10px;max-height:160px;overflow-y:auto;background:rgba(0,0,0,0.25);
+  border-radius:6px;font-size:0.6rem;white-space:pre-wrap;word-break:break-all;}
+.val-err-copy-row{margin-top:8px;}
+.val-err-copy-row .btn-copy{font-size:0.62rem;}
 .schema-toggle{font-family:var(--mono);font-size:0.58rem;color:var(--muted2);
   cursor:pointer;padding:6px 0;display:inline-flex;align-items:center;gap:5px;
   border-bottom:1px dashed rgba(255,255,255,0.08);}
@@ -241,6 +246,37 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);width:100vw;
   margin:2px 2px 0 0;}
 .nt-hint{font-family:var(--mono);font-size:0.5rem;color:var(--muted);margin-top:8px;
   padding-top:8px;border-top:1px solid var(--border);}
+
+/* NODE POPUP (additional info) */
+#node-popup-overlay{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.6);
+  backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;
+  padding:24px;box-sizing:border-box;}
+#node-popup-overlay.show{display:flex;}
+#node-popup{background:var(--bg2);border:1px solid var(--border);border-radius:16px;
+  max-width:520px;width:100%;max-height:85vh;display:flex;flex-direction:column;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);overflow:hidden;}
+.node-popup-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+  padding:18px 20px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.node-popup-title{font-size:1.1rem;font-weight:700;line-height:1.3;}
+.node-popup-cat{font-family:var(--mono);font-size:0.55rem;text-transform:uppercase;
+  letter-spacing:1px;color:var(--muted2);margin-top:4px;}
+.node-popup-close{background:transparent;border:none;color:var(--muted2);cursor:pointer;
+  font-size:18px;padding:2px 6px;line-height:1;border-radius:6px;flex-shrink:0;}
+.node-popup-close:hover{color:var(--text);background:rgba(255,255,255,0.06);}
+.node-popup-body{padding:18px 20px;overflow-y:auto;flex:1;}
+.node-popup-body::-webkit-scrollbar{width:4px;}
+.node-popup-body::-webkit-scrollbar-thumb{background:rgba(0,229,255,0.2);border-radius:2px;}
+.node-popup-desc{font-size:0.8rem;color:var(--muted2);line-height:1.6;margin-bottom:16px;
+  padding-bottom:14px;border-bottom:1px solid var(--border);}
+.node-popup-prereq{margin-bottom:14px;}
+.node-popup-prereq .node-popup-label{font-family:var(--mono);font-size:0.52rem;
+  color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.node-popup-tags{display:flex;flex-wrap:wrap;gap:6px;}
+.node-popup-tag{padding:4px 10px;border-radius:6px;border:1px solid var(--border);
+  font-size:0.65rem;color:var(--muted2);background:rgba(255,255,255,0.03);}
+.node-popup-info-label{font-family:var(--mono);font-size:0.52rem;color:var(--muted);
+  text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+.node-popup-info{font-size:0.8rem;color:var(--text);line-height:1.75;white-space:pre-wrap;}
 
 /* HINT */
 #hint-bar{position:absolute;bottom:16px;right:14px;font-family:var(--mono);
@@ -392,10 +428,31 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);width:100vw;
         <div class="nt-pl">Prerequisites</div>
         <div id="nt-pre-tags"></div>
       </div>
-      <div class="nt-hint">Click to focus connections</div>
+      <div class="nt-hint">Click to focus connections · Click again for details · Right-click to open details</div>
     </div>
 
-    <div id="hint-bar">drag to pan · scroll to zoom<br>hover to preview · click to focus</div>
+    <div id="hint-bar">drag to pan · scroll to zoom<br>hover to preview · click to focus · click again or right-click for details</div>
+
+    <div id="node-popup-overlay">
+      <div id="node-popup">
+        <div class="node-popup-hdr">
+          <div>
+            <div class="node-popup-title" id="node-popup-title"></div>
+            <div class="node-popup-cat" id="node-popup-cat"></div>
+          </div>
+          <button class="node-popup-close" id="node-popup-close" aria-label="Close">✕</button>
+        </div>
+        <div class="node-popup-body">
+          <div class="node-popup-desc" id="node-popup-desc"></div>
+          <div class="node-popup-prereq" id="node-popup-prereq" style="display:none">
+            <div class="node-popup-label">Prerequisites</div>
+            <div class="node-popup-tags" id="node-popup-tags"></div>
+          </div>
+          <div class="node-popup-info-label">Additional info</div>
+          <div class="node-popup-info" id="node-popup-info"></div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -458,6 +515,7 @@ const SCHEMA_DISPLAY = `{
       "hot": boolean,
       "depth_level": 1 | 2 | 3,
       "description": "string — mentor-style explanation, why this matters HERE",
+      "additionalInfo": "string — extended explanation for the node popup: enough for the user to understand this concept, how it connects to dependent nodes, and how it serves the main topic; length scales with depth (see ADDITIONAL INFO section)",
       "prerequisites": ["node_id"],
       "analogy": "string (optional) — 'This is like X in the context of Y' — use for hard concepts"
     }
@@ -619,6 +677,25 @@ NODE DESCRIPTIONS — HOW TO WRITE THEM:
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+ADDITIONAL INFO — HOW TO WRITE IT (required for every node):
+
+  "additionalInfo" is shown in a popup when the user clicks a node. It must give the
+  learner enough to understand this concept in context and how the whole map fits together.
+
+  For EACH node, write additionalInfo that:
+  1. Explains the concept sufficiently — what it is, why it matters, and (if helpful) a brief example or analogy.
+  2. Describes how this node connects to its dependent and related nodes (prerequisites, links). Name specific node concepts where it helps. Make the interconnections explicit so the learner sees how pieces depend on each other.
+  3. States how this concept serves the main topic — its role in the bigger picture. A learner who reads all additionalInfo across the map (in learning-path order or by exploring) should gain a coherent, depth-appropriate understanding of the topic.
+
+  Length scales with depth (roughly half to one page per node when printed):
+  → EXPLORER: 2–4 short paragraphs (3–6 sentences total). Focus on clarity and place in the map.
+  → PRACTITIONER: 4–6 paragraphs. Include connections, trade-offs, and how it fits the topic.
+  → RESEARCHER: 6–10+ paragraphs. Deeper nuance, cross-domain ties, and how it serves the main topic.
+
+  Write in clear, continuous prose. No bullet lists unless the model deems them clearer. The tone should be mentor-like: one expert explaining to a curious learner. If a node has no prerequisites, still explain how it connects to the rest of the graph and serves the topic.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 LEARNING PATH — HOW TO ORDER IT:
 
   The learning path is not just topological sort of prerequisites.
@@ -685,6 +762,7 @@ HARD RULES (violations will break the application):
   R8. Every category must have at least 2 nodes assigned to it
   R9. "relation" must be one of the 11 values defined above — no custom values
   R10. Do not repeat the same node id in learningPath more than once
+  R11. Every node MUST include "additionalInfo" (non-empty string) as defined in the ADDITIONAL INFO section
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -882,6 +960,29 @@ document.getElementById('json-paste').addEventListener('input', function() {
   validateTimeout = setTimeout(() => validatePaste(this.value), 500);
 });
 
+function showErrorWithCopy(container, fullErrorText) {
+  container.innerHTML = '<p class="val-err-calm">No need to worry — LLMs can make mistakes. Copy the error below and paste it to your LLM; it will help fix the schema.</p><pre class="val-err-pre" id="val-msg-full-error"></pre><div class="val-err-copy-row"><button type="button" class="btn-copy val-err-copy-btn">⎘ Copy error</button></div>';
+  const pre = document.getElementById('val-msg-full-error');
+  const copyBtn = container.querySelector('.val-err-copy-btn');
+  if (pre) pre.textContent = fullErrorText;
+  if (copyBtn) {
+    copyBtn.addEventListener('click', () => {
+      const text = pre ? pre.textContent : fullErrorText;
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        navigator.clipboard.writeText(text).then(() => {
+          copyBtn.textContent = '✓ Copied';
+          copyBtn.classList.add('copied');
+          setTimeout(() => { copyBtn.textContent = '⎘ Copy error'; copyBtn.classList.remove('copied'); }, 2500);
+        }).catch(() => { copyBtn.textContent = 'Copy failed'; setTimeout(() => { copyBtn.textContent = '⎘ Copy error'; }, 2000); });
+      } else {
+        const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); copyBtn.textContent = '✓ Copied'; copyBtn.classList.add('copied'); setTimeout(() => { copyBtn.textContent = '⎘ Copy error'; copyBtn.classList.remove('copied'); }, 2500); } catch (err) { copyBtn.textContent = 'Copy failed'; }
+        document.body.removeChild(ta);
+      }
+    });
+  }
+}
+
 function validatePaste(raw) {
   const vm = document.getElementById('val-msg');
   const btn = document.getElementById('launch-btn');
@@ -898,14 +999,16 @@ function validatePaste(raw) {
   try { parsed = JSON.parse(cleaned); }
   catch(e) {
     vm.className = 'err'; vm.style.display = 'block';
-    vm.textContent = `✗ Invalid JSON: ${e.message.substring(0, 80)}`;
+    const fullError = `Invalid JSON: ${e.message}`;
+    showErrorWithCopy(vm, fullError);
     return;
   }
 
   const result = validateSchema(parsed);
   if (!result.ok) {
     vm.className = 'err'; vm.style.display = 'block';
-    vm.textContent = `✗ Schema errors:\n${result.errors.slice(0,4).join('\n')}${result.errors.length>4?`\n…+${result.errors.length-4} more`:''}`;
+    const fullError = `Schema errors:\n${result.errors.join('\n')}`;
+    showErrorWithCopy(vm, fullError);
     return;
   }
 
@@ -1126,12 +1229,55 @@ function buildGraph(data) {
     tip.style.left = x+'px'; tip.style.top = y+'px';
   }
 
-  // ── CLICK FOCUS ──
-  NE.on('click', (e, d) => {
-    e.stopPropagation();
-    if (activeNode===d.id) { clearFocus(); return; }
-    activeNode = d.id;
+  // ── NODE POPUP ──
+  const popupOverlay = document.getElementById('node-popup-overlay');
+  const popupTitle = document.getElementById('node-popup-title');
+  const popupCat = document.getElementById('node-popup-cat');
+  const popupDesc = document.getElementById('node-popup-desc');
+  const popupPrereq = document.getElementById('node-popup-prereq');
+  const popupTags = document.getElementById('node-popup-tags');
+  const popupInfo = document.getElementById('node-popup-info');
 
+  function openNodePopup(d) {
+    const cat = data.categories.find(c => c.id === (d.type === 'category' ? d.id : d.category));
+    popupTitle.textContent = d.label;
+    popupTitle.style.color = d.color;
+    popupCat.textContent = (cat?.label || '').toUpperCase();
+    popupCat.style.color = d.color;
+    popupDesc.textContent = d.description || '';
+
+    if (d.type === 'concept') {
+      const prereqs = d.prerequisites?.filter(Boolean) || [];
+      if (prereqs.length) {
+        popupTags.innerHTML = prereqs.map(pid => {
+          const pn = nodeMap[pid];
+          return `<span class="node-popup-tag">${pn?.label || pid}</span>`;
+        }).join('');
+        popupPrereq.style.display = 'block';
+      } else {
+        popupPrereq.style.display = 'none';
+      }
+      const extra = d.additionalInfo && String(d.additionalInfo).trim();
+      popupInfo.textContent = extra || 'No additional info for this concept. Use a map generated with the updated prompt to see extended explanations here.';
+    } else {
+      popupPrereq.style.display = 'none';
+      const inCategory = conceptNodes.filter(c => c.category === d.id).map(c => c.label);
+      popupInfo.textContent = inCategory.length
+        ? `Concepts in this domain: ${inCategory.join(', ')}.`
+        : (d.description || '');
+    }
+    popupOverlay.classList.add('show');
+  }
+
+  function closeNodePopup() {
+    popupOverlay.classList.remove('show');
+  }
+
+  document.getElementById('node-popup-close').addEventListener('click', closeNodePopup);
+  popupOverlay.addEventListener('click', (e) => { if (e.target === popupOverlay) closeNodePopup(); });
+
+  function applyFocus(d) {
+    activeNode = d.id;
     const conn = new Set([d.id]);
     allLinks.forEach(l => {
       const s=typeof l.source==='object'?l.source.id:l.source;
@@ -1141,7 +1287,6 @@ function buildGraph(data) {
     });
     if(d.type==='concept'&&d.category) conn.add(d.category);
     if(d.type==='category') conceptNodes.filter(c=>c.category===d.id).forEach(c=>conn.add(c.id));
-
     NE.classed('dim', n => !conn.has(n.id));
     LE.classed('hi', l => {
       const s=typeof l.source==='object'?l.source.id:l.source;
@@ -1152,9 +1297,26 @@ function buildGraph(data) {
       const t=typeof l.target==='object'?l.target.id:l.target;
       return !(s===d.id||t===d.id);
     });
-
-    // Highlight learning path step
     highlightLpStep(d.id);
+  }
+
+  // ── CLICK: first click = focus, second click = open details ──
+  NE.on('click', (e, d) => {
+    e.stopPropagation();
+    if (d.type === 'root') return;
+    if (activeNode === d.id) {
+      openNodePopup(d);
+      return;
+    }
+    applyFocus(d);
+  });
+
+  // ── RIGHT-CLICK: open details directly (and focus so graph matches) ──
+  NE.on('contextmenu', (e, d) => {
+    e.preventDefault();
+    if (d.type === 'root') return;
+    if (activeNode !== d.id) applyFocus(d);
+    openNodePopup(d);
   });
 
   svg.on('click', clearFocus);
@@ -1165,6 +1327,7 @@ function buildGraph(data) {
     LE.classed('hi',false).classed('dim',false);
     document.querySelectorAll('.lp-step').forEach(el=>el.classList.remove('active'));
     tip.classList.remove('show');
+    closeNodePopup();
   }
 
   // ── LEGEND ──
@@ -1225,8 +1388,22 @@ function buildGraph(data) {
   document.getElementById('zfit').onclick=fit;
   setTimeout(fit,300);
 
+  // ── FLY TO NODE (for learning path) ──
+  function flyToNode(nodeId) {
+    const node = allNodes.find(n => n.id === nodeId);
+    if (!node || node.x == null) return;
+    const k = 1.4;
+    const tx = innerWidth / 2 - node.x * k;
+    const ty = innerHeight / 2 - node.y * k;
+    svg.transition().duration(700).ease(d3.easeCubicInOut)
+      .call(zoomBehavior.transform, d3.zoomIdentity.translate(tx, ty).scale(k));
+  }
+
   // ── LEARNING PATH ──
-  buildLearningPath(data, nodeMap, catColor);
+  buildLearningPath(data, nodeMap, catColor, (nodeId) => {
+    flyToNode(nodeId);
+    highlightLpStep(nodeId);
+  });
 
   window.addEventListener('resize',()=>{
     svg.attr('width',innerWidth).attr('height',innerHeight);
@@ -1238,7 +1415,7 @@ function buildGraph(data) {
 // ══════════════════════════════════════════
 // LEARNING PATH
 // ══════════════════════════════════════════
-function buildLearningPath(data, nodeMap, catColor) {
+function buildLearningPath(data, nodeMap, catColor, onGoToNode) {
   const stepsEl = document.getElementById('lp-steps');
   const introEl = document.getElementById('lp-intro');
   stepsEl.innerHTML = '';
@@ -1257,21 +1434,28 @@ function buildLearningPath(data, nodeMap, catColor) {
     el.className = 'lp-step';
     el.id = `lps-${step.nodeId}`;
     el.innerHTML = `
-      <div class="lp-num" style="border-color:${color};color:${color}">${step.order}</div>
+      <div class="lp-num" style="border-color:${color};color:${color}" title="Click to mark done">${step.order}</div>
       <div class="lp-body">
         <div class="lp-name" style="color:${color}">${node.label}</div>
         <div class="lp-why">${step.reason || 'Core concept for this topic.'}</div>
         <div class="lp-time">~${step.estimatedMinutes||10} min</div>
       </div>`;
 
-    el.addEventListener('click', () => {
-      el.classList.toggle('done');
-      if (el.classList.contains('done')) {
-        appState.completedSteps.add(step.nodeId);
-      } else {
-        appState.completedSteps.delete(step.nodeId);
+    el.addEventListener('click', (e) => {
+      if (e.target.closest('.lp-num')) {
+        e.stopPropagation();
+        el.classList.toggle('done');
+        if (el.classList.contains('done')) {
+          appState.completedSteps.add(step.nodeId);
+        } else {
+          appState.completedSteps.delete(step.nodeId);
+        }
+        updateProgress(sorted.length);
+        return;
       }
-      updateProgress(sorted.length);
+      if (typeof onGoToNode === 'function') {
+        onGoToNode(step.nodeId);
+      }
     });
 
     stepsEl.appendChild(el);
