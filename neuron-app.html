@@ -212,6 +212,8 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);width:100vw;
 .lp-why{font-size:0.63rem;color:var(--muted2);line-height:1.5;}
 .lp-time{font-family:var(--mono);font-size:0.52rem;color:var(--muted);margin-top:4px;}
 .lp-progress{margin-top:18px;padding-top:14px;border-top:1px solid var(--border);}
+.lp-prog-pct{font-size:1.5rem;font-weight:700;color:var(--accent);margin-bottom:4px;
+  line-height:1.2;}
 .lp-prog-lbl{font-family:var(--mono);font-size:0.55rem;color:var(--muted2);margin-bottom:6px;}
 .prog-bar{height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;}
 .prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));
@@ -278,9 +280,22 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);width:100vw;
   text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
 .node-popup-info{font-size:0.8rem;color:var(--text);line-height:1.75;white-space:pre-wrap;}
 
-/* HINT */
-#hint-bar{position:absolute;bottom:16px;right:14px;font-family:var(--mono);
-  font-size:0.52rem;color:var(--muted);text-align:right;line-height:2;pointer-events:none;}
+/* FOOTER (graph screen) */
+#graph-footer{position:absolute;bottom:0;left:0;right:0;height:48px;
+  background:linear-gradient(0deg,rgba(2,5,8,0.97),transparent 30%);
+  border-top:1px solid var(--border);display:flex;align-items:center;
+  justify-content:space-between;padding:0 16px;gap:16px;pointer-events:none;}
+#footer-progress{display:flex;align-items:center;gap:10px;min-width:0;flex:0 1 auto;}
+#footer-progress.hidden{display:none;}
+.footer-prog-lbl{font-family:var(--mono);font-size:0.55rem;color:var(--muted2);
+  text-transform:uppercase;letter-spacing:1px;white-space:nowrap;}
+.footer-prog-bar{width:120px;height:6px;background:rgba(255,255,255,0.06);
+  border-radius:3px;overflow:hidden;}
+.footer-prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));
+  border-radius:3px;transition:width 0.4s;}
+.footer-prog-pct{font-family:var(--mono);font-size:0.6rem;font-weight:700;color:var(--accent);}
+#hint-bar{font-family:var(--mono);font-size:0.52rem;color:var(--muted);
+  text-align:right;line-height:1.6;pointer-events:none;flex-shrink:0;}
 
 /* SVG classes */
 .link{stroke-opacity:0.18;stroke-width:1;fill:none;}
@@ -414,6 +429,7 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);width:100vw;
       <div class="lp-intro" id="lp-intro"></div>
       <div id="lp-steps"></div>
       <div class="lp-progress">
+        <div class="lp-prog-pct" id="prog-pct">0%</div>
         <div class="lp-prog-lbl" id="prog-lbl">0 / 0 completed</div>
         <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
       </div>
@@ -431,7 +447,14 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);width:100vw;
       <div class="nt-hint">Click to focus connections · Click again for details · Right-click to open details</div>
     </div>
 
-    <div id="hint-bar">drag to pan · scroll to zoom<br>hover to preview · click to focus · click again or right-click for details</div>
+    <div id="graph-footer">
+      <div id="footer-progress" class="hidden">
+        <span class="footer-prog-lbl">Learning path</span>
+        <div class="footer-prog-bar"><div class="footer-prog-fill" id="footer-prog-fill" style="width:0%"></div></div>
+        <span class="footer-prog-pct" id="footer-prog-pct">0%</span>
+      </div>
+      <div id="hint-bar">drag to pan · scroll to zoom · hover to preview · click to focus · click again or right-click for details</div>
+    </div>
 
     <div id="node-popup-overlay">
       <div id="node-popup">
@@ -1467,8 +1490,23 @@ function buildLearningPath(data, nodeMap, catColor, onGoToNode) {
 function updateProgress(total) {
   const done = appState.completedSteps.size;
   const pct = total ? Math.round(done/total*100) : 0;
+  const pctEl = document.getElementById('prog-pct');
+  if (pctEl) pctEl.textContent = pct + '%';
   document.getElementById('prog-lbl').textContent = `${done} / ${total} completed`;
-  document.getElementById('prog-fill').style.width = pct+'%';
+  document.getElementById('prog-fill').style.width = pct + '%';
+
+  var footerProg = document.getElementById('footer-progress');
+  var footerFill = document.getElementById('footer-prog-fill');
+  var footerPct = document.getElementById('footer-prog-pct');
+  if (footerProg && footerFill && footerPct) {
+    if (total > 0) {
+      footerProg.classList.remove('hidden');
+      footerFill.style.width = pct + '%';
+      footerPct.textContent = pct + '%';
+    } else {
+      footerProg.classList.add('hidden');
+    }
+  }
 }
 
 function highlightLpStep(nodeId) {
