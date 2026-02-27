@@ -74,7 +74,13 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);width:100vw;
   background:rgba(0,229,255,0.06);}
 
 /* ── SCREEN 2: PROMPT ── */
-#s-prompt{background:radial-gradient(ellipse at 70% 20%, rgba(199,125,255,0.04) 0%, transparent 60%);}
+.screen{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;transition:opacity 0.4s,transform 0.4s;overflow:hidden;}
+.screen.hidden{opacity:0;pointer-events:none;transform:scale(0.97);}
+
+/* ── SCREEN 2: PROMPT ── */
+#s-prompt{background:radial-gradient(ellipse at 70% 20%, rgba(199,125,255,0.04) 0%, transparent 60%);
+  overflow-y:auto;justify-content:flex-start;padding:32px 0;}
 .prompt-wrap{width:700px;max-width:95vw;}
 .pw-hdr{display:flex;align-items:center;gap:14px;margin-bottom:24px;}
 .pw-back{background:transparent;border:1px solid var(--border);border-radius:8px;
@@ -248,37 +254,35 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);width:100vw;
   margin:2px 2px 0 0;}
 .nt-hint{font-family:var(--mono);font-size:0.5rem;color:var(--muted);margin-top:8px;
   padding-top:8px;border-top:1px solid var(--border);}
-
-/* NODE POPUP (additional info) */
-#node-popup-overlay{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.6);
-  backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;
-  padding:24px;box-sizing:border-box;}
-#node-popup-overlay.show{display:flex;}
-#node-popup{background:var(--bg2);border:1px solid var(--border);border-radius:16px;
-  max-width:520px;width:100%;max-height:85vh;display:flex;flex-direction:column;
-  box-shadow:0 20px 60px rgba(0,0,0,0.5);overflow:hidden;}
-.node-popup-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
-  padding:18px 20px;border-bottom:1px solid var(--border);flex-shrink:0;}
-.node-popup-title{font-size:1.1rem;font-weight:700;line-height:1.3;}
-.node-popup-cat{font-family:var(--mono);font-size:0.55rem;text-transform:uppercase;
-  letter-spacing:1px;color:var(--muted2);margin-top:4px;}
-.node-popup-close{background:transparent;border:none;color:var(--muted2);cursor:pointer;
-  font-size:18px;padding:2px 6px;line-height:1;border-radius:6px;flex-shrink:0;}
-.node-popup-close:hover{color:var(--text);background:rgba(255,255,255,0.06);}
-.node-popup-body{padding:18px 20px;overflow-y:auto;flex:1;}
-.node-popup-body::-webkit-scrollbar{width:4px;}
-.node-popup-body::-webkit-scrollbar-thumb{background:rgba(0,229,255,0.2);border-radius:2px;}
-.node-popup-desc{font-size:0.8rem;color:var(--muted2);line-height:1.6;margin-bottom:16px;
-  padding-bottom:14px;border-bottom:1px solid var(--border);}
-.node-popup-prereq{margin-bottom:14px;}
-.node-popup-prereq .node-popup-label{font-family:var(--mono);font-size:0.52rem;
-  color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
-.node-popup-tags{display:flex;flex-wrap:wrap;gap:6px;}
-.node-popup-tag{padding:4px 10px;border-radius:6px;border:1px solid var(--border);
-  font-size:0.65rem;color:var(--muted2);background:rgba(255,255,255,0.03);}
-.node-popup-info-label{font-family:var(--mono);font-size:0.52rem;color:var(--muted);
-  text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
-.node-popup-info{font-size:0.8rem;color:var(--text);line-height:1.75;white-space:pre-wrap;}
+ 
+/* NODE DETAIL PANEL (additional info, separate from learning path) */
+#node-detail-panel{position:absolute;top:68px;left:60px;pointer-events:all;
+  width:320px;max-width:36vw;max-height:calc(100vh - 140px);
+  background:rgba(2,5,8,0.92);border:1px solid var(--border);border-radius:12px;
+  padding:10px 12px 14px;overflow-y:auto;backdrop-filter:blur(16px);
+  box-sizing:border-box;z-index:12;}
+.node-detail-header{display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:6px;cursor:move;}
+.node-detail-label{font-family:var(--mono);font-size:0.55rem;color:var(--muted2);
+  text-transform:uppercase;letter-spacing:1.3px;}
+.node-detail-toggle{background:transparent;border:1px solid var(--border);border-radius:6px;
+  color:var(--muted2);font-family:var(--mono);font-size:0.6rem;padding:2px 6px;
+  cursor:pointer;transition:all 0.15s;}
+.node-detail-toggle:hover{border-color:rgba(0,229,255,0.3);color:var(--accent);
+  background:rgba(0,229,255,0.06);}
+.node-detail-body{margin-top:4px;}
+.node-detail-title{font-size:0.9rem;font-weight:700;line-height:1.3;margin-bottom:2px;}
+.node-detail-cat{font-family:var(--mono);font-size:0.55rem;text-transform:uppercase;
+  letter-spacing:1px;color:var(--muted2);margin-bottom:8px;}
+.node-detail-desc{font-size:0.7rem;color:var(--muted2);line-height:1.6;margin-bottom:10px;}
+.node-detail-info-label{font-family:var(--mono);font-size:0.52rem;color:var(--muted);
+  text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.node-detail-info{font-size:0.74rem;color:var(--text);line-height:1.8;white-space:pre-wrap;}
+#node-detail-resize{position:absolute;right:5px;bottom:5px;width:12px;height:12px;
+  border-radius:2px;border:1px solid var(--border);background:rgba(255,255,255,0.04);
+  cursor:se-resize;}
+#node-detail-panel.collapsed .node-detail-body{display:none;}
+#node-detail-panel.collapsed #node-detail-resize{display:none;}
 
 /* FOOTER (graph screen) */
 #graph-footer{position:absolute;bottom:0;left:0;right:0;height:48px;
@@ -304,6 +308,31 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);width:100vw;
 .link.dim{stroke-opacity:0.02!important;}
 .node{cursor:pointer;}
 .node.dim{opacity:0.08;}
+
+/* ── MULTI-PART SLOTS ── */
+.mp-row{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap;margin-bottom:10px;}
+.mp-slot{background:var(--bg2);border:1px solid var(--border);border-radius:16px;
+  padding:18px 20px;margin-bottom:10px;transition:border-color 0.3s,opacity 0.3s;}
+.mp-slot.active{border-color:rgba(0,229,255,0.2);}
+.mp-slot.complete{border-color:rgba(105,240,174,0.2);}
+.mp-slot.locked{opacity:0.35;pointer-events:none;}
+.mp-slot-hdr{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.mp-badge{width:20px;height:20px;border-radius:50%;border:1.5px solid;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:0.52rem;font-weight:700;}
+.mp-badge.pending{border-color:var(--muted);color:var(--muted);}
+.mp-badge.active{border-color:var(--accent);color:var(--accent);background:rgba(0,229,255,0.08);}
+.mp-badge.done{border-color:var(--green);color:var(--green);background:rgba(105,240,174,0.08);}
+.mp-slot-title{font-size:0.82rem;font-weight:700;}
+.mp-slot-sub{font-family:var(--mono);font-size:0.52rem;color:var(--muted2);margin-left:auto;}
+.mp-status{font-family:var(--mono);font-size:0.6rem;margin-top:8px;padding:5px 10px;
+  border-radius:6px;display:none;}
+.mp-status.ok{display:block;color:var(--green);background:rgba(105,240,174,0.06);
+  border:1px solid rgba(105,240,174,0.2);}
+.mp-status.err{display:block;color:var(--red);background:rgba(255,107,107,0.06);
+  border:1px solid rgba(255,107,107,0.2);}
+.mp-launch-hint{font-family:var(--mono);font-size:0.55rem;color:var(--muted2);
+  text-align:center;margin-bottom:8px;}
 </style>
 </head>
 <body>
@@ -419,6 +448,23 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);width:100vw;
       <div id="leg-items"></div>
     </div>
 
+    <div id="node-detail-panel">
+      <div class="node-detail-header">
+        <div class="node-detail-label">Selected concept</div>
+        <button class="node-detail-toggle" id="node-detail-toggle" aria-label="Collapse details">−</button>
+      </div>
+      <div class="node-detail-body" id="node-detail-body">
+        <div class="node-detail-title" id="node-detail-title">No concept selected</div>
+        <div class="node-detail-cat" id="node-detail-cat"></div>
+        <div class="node-detail-desc" id="node-detail-desc"></div>
+        <div class="node-detail-info-label">Additional info</div>
+        <div class="node-detail-info" id="node-detail-info">
+          Click a node in the map to see extended explanations here.
+        </div>
+      </div>
+      <div id="node-detail-resize"></div>
+    </div>
+
     <button id="lp-toggle">🎓 Learning Path</button>
 
     <div id="lp-panel">
@@ -444,7 +490,7 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);width:100vw;
         <div class="nt-pl">Prerequisites</div>
         <div id="nt-pre-tags"></div>
       </div>
-      <div class="nt-hint">Click to focus connections · Click again for details · Right-click to open details</div>
+      <div class="nt-hint">Click to focus connections · Details appear in the side card</div>
     </div>
 
     <div id="graph-footer">
@@ -453,28 +499,7 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);width:100vw;
         <div class="footer-prog-bar"><div class="footer-prog-fill" id="footer-prog-fill" style="width:0%"></div></div>
         <span class="footer-prog-pct" id="footer-prog-pct">0%</span>
       </div>
-      <div id="hint-bar">drag to pan · scroll to zoom · hover to preview · click to focus · click again or right-click for details</div>
-    </div>
-
-    <div id="node-popup-overlay">
-      <div id="node-popup">
-        <div class="node-popup-hdr">
-          <div>
-            <div class="node-popup-title" id="node-popup-title"></div>
-            <div class="node-popup-cat" id="node-popup-cat"></div>
-          </div>
-          <button class="node-popup-close" id="node-popup-close" aria-label="Close">✕</button>
-        </div>
-        <div class="node-popup-body">
-          <div class="node-popup-desc" id="node-popup-desc"></div>
-          <div class="node-popup-prereq" id="node-popup-prereq" style="display:none">
-            <div class="node-popup-label">Prerequisites</div>
-            <div class="node-popup-tags" id="node-popup-tags"></div>
-          </div>
-          <div class="node-popup-info-label">Additional info</div>
-          <div class="node-popup-info" id="node-popup-info"></div>
-        </div>
-      </div>
+      <div id="hint-bar">drag to pan · scroll to zoom · hover to preview · click to focus & see details</div>
     </div>
   </div>
 </div>
@@ -509,76 +534,66 @@ let appState = {
   data: null,
   completedSteps: new Set(),
   activeNode: null,
-  fromJsonDirect: false
+  fromJsonDirect: false,
+  useMultiPart: false,
+  skeletonData: null,
+  enrichBatches: [null, null]
 };
 
 // ══════════════════════════════════════════
 // SCHEMA
 // ══════════════════════════════════════════
 const SCHEMA_DISPLAY = `{
+  "_ncf": "1",
   "topic": "string",
   "depth": "explorer | practitioner | researcher",
-  "summary": "string — 2-3 sentences. What is the shape of this knowledge? What will the learner see when they look at this map?",
+  "summary": "string",
 
   "categories": [
     {
       "id": "string",
       "label": "string",
-      "color": "#hex — must be readable on #020508 background",
+      "color": "#hex",
       "icon": "single emoji",
-      "description": "string — one sentence: what kind of concepts live here?"
+      "description": "string"
     }
   ],
 
-  "nodes": [
-    {
-      "id": "string — lowercase_underscores_only",
-      "label": "string — short display name (max 4 words)",
-      "category": "category_id",
-      "hot": boolean,
-      "depth_level": 1 | 2 | 3,
-      "description": "string — mentor-style explanation, why this matters HERE",
-      "additionalInfo": "string — extended explanation for the node popup: enough for the user to understand this concept, how it connects to dependent nodes, and how it serves the main topic; length scales with depth (see ADDITIONAL INFO section)",
-      "prerequisites": ["node_id"],
-      "analogy": "string (optional) — 'This is like X in the context of Y' — use for hard concepts"
-    }
+  "N_cols": ["id","label","cat","hot","dl","desc","info","prereq","analogy"],
+  "N": [
+    ["node_id", "Label", "category_id", 1, 1,
+     "description string",
+     "additionalInfo string",
+     ["prereq_id"],
+     null]
   ],
 
-  "links": [
-    {
-      "source": "node_id",
-      "target": "node_id",
-      "relation": "one of the 11 relation types above",
-      "type": "hierarchical | semantic | cross_domain",
-      "weight": 1 | 2 | 3,
-      "label": "string (optional) — 3-5 words describing the connection, shown on hover"
-    }
+  "L_cols": ["src","tgt","rel","tp","w","lbl"],
+  "L": [
+    ["source_id","target_id","relation_type","hierarchical|semantic|cross_domain",1|2|3,"optional label"]
   ],
 
-  "learningPath": [
-    {
-      "nodeId": "node_id",
-      "order": number,
-      "phase": "string — group name (e.g. 'Foundations', 'Core Mechanics', 'Advanced Patterns', 'Synthesis')",
-      "reason": "string — why learn THIS concept at THIS moment in the journey",
-      "estimatedMinutes": number,
-      "keyInsight": "string — the single sentence this node should leave in the learner's mind"
-    }
+  "LP_cols": ["ni","o","ph","rs","em","ki"],
+  "LP": [
+    ["node_id", 1, "Phase Name", "reason string", 15, "key insight string"]
   ],
 
-  "metadata": {
-    "totalConcepts": number,
-    "totalLinks": number,
-    "crossDomainInsights": [
-      "string — 2-3 sentence observation connecting this topic to a surprising other domain"
-    ],
-    "suggestedNextTopics": ["string"],
-    "commonMisconceptions": [
-      "string — belief many beginners hold that this map should correct"
-    ],
-    "centralNode": "node_id — the single node that, if removed, would disconnect the most of the graph"
+  "meta": {
+    "tc": number,
+    "tl": number,
+    "central": "node_id",
+    "insights": ["string"],
+    "next": ["string"],
+    "misconceptions": ["string"]
   }
-}`;
+}
+
+Column definitions:
+  N_cols:  id=node id, label=display name, cat=category id, hot=1|0, dl=depth level 1-3,
+           desc=description, info=additionalInfo, prereq=prerequisites array, analogy=string|null
+  L_cols:  src=source node id, tgt=target node id, rel=relation type, tp=link type,
+           w=weight 1-3, lbl=label string
+  LP_cols: ni=nodeId, o=order number, ph=phase name, rs=reason, em=estimatedMinutes, ki=keyInsight`;
 
 document.getElementById('schema-box').textContent = SCHEMA_DISPLAY;
 
@@ -773,9 +788,87 @@ CROSS-DOMAIN INSIGHT GUIDELINES:
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+OUTPUT FORMAT — NCF (Neuron Compact Format):
+
+  To reduce token usage while preserving all content, output a COLUMNAR JSON format.
+  Keys are defined ONCE at the top of each section; values are positional arrays.
+  This is the ONLY accepted output format. Do not use the verbose key-per-row format.
+
+  COLUMN ORDER IS FIXED AND MANDATORY:
+  N_cols  (nodes):        ["id","label","cat","hot","dl","desc","info","prereq","analogy"]
+  L_cols  (links):        ["src","tgt","rel","tp","w","lbl"]
+  LP_cols (learningPath): ["ni","o","ph","rs","em","ki"]
+
+  COLUMN DEFINITIONS:
+  Nodes:
+    id      = node id (lowercase_underscores, globally unique, max 30 chars)
+    label   = display name (max 4 words)
+    cat     = category id (must match a category)
+    hot     = 1 (true) or 0 (false)
+    dl      = depth_level: 1 | 2 | 3
+    desc    = description (mentor-style, 1 sentence, why this matters HERE)
+    info    = additionalInfo (full paragraphs per ADDITIONAL INFO guidelines — do NOT shorten)
+    prereq  = prerequisites array of node ids (empty array [] if none)
+    analogy = analogy string or null
+
+  Links:
+    src = source node id
+    tgt = target node id
+    rel = relation (one of the 11 relation types)
+    tp  = "hierarchical" | "semantic" | "cross_domain"
+    w   = weight: 1 | 2 | 3
+    lbl = label string (3-5 words, or empty string "")
+
+  LearningPath:
+    ni = nodeId
+    o  = order number
+    ph = phase name
+    rs = reason (why NOW)
+    em = estimatedMinutes
+    ki = keyInsight (single sentence)
+
+  META FIELDS (short keys):
+    tc            = totalConcepts
+    tl            = totalLinks
+    central       = centralNode (node id)
+    insights      = crossDomainInsights (array of strings)
+    next          = suggestedNextTopics (array of strings)
+    misconceptions = commonMisconceptions (array of strings)
+
+  EXAMPLE (2 nodes, 1 link, 1 learning path step):
+  {
+    "_ncf": "1",
+    "topic": "...",
+    "depth": "explorer",
+    "summary": "...",
+    "categories": [{"id":"foundations","label":"Foundations","color":"#4fc3f7","icon":"🌱","description":"..."}],
+    "N_cols": ["id","label","cat","hot","dl","desc","info","prereq","analogy"],
+    "N": [
+      ["cap_theorem","CAP Theorem","foundations",1,1,"CAP is why every distributed system is a compromise.","CAP Theorem states that...",[],"Like choosing a phone plan — unlimited calls OR data, never both."],
+      ["sharding","Sharding","foundations",0,2,"Sharding is how you scale a database horizontally.","When your data grows beyond one server...",[" cap_theorem"],null]
+    ],
+    "L_cols": ["src","tgt","rel","tp","w","lbl"],
+    "L": [
+      ["cap_theorem","sharding","feeds_into","hierarchical",3,"partitioning requires tradeoffs"]
+    ],
+    "LP_cols": ["ni","o","ph","rs","em","ki"],
+    "LP": [
+      ["cap_theorem",1,"Foundations","CAP first — it reframes every database decision.",25,"Every distributed system is a negotiation."],
+      ["sharding",2,"Core Mechanics","Now that CAP is clear, sharding is the practical response.",20,"Scale by splitting data, but you inherit coordination costs."]
+    ],
+    "meta": {
+      "tc": 2, "tl": 1, "central": "cap_theorem",
+      "insights": ["CAP Theorem is structurally identical to the Uncertainty Principle..."],
+      "next": ["Distributed Systems Internals"],
+      "misconceptions": ["CAP means pick 2-of-3 forever — actually the tradeoff is dynamic"]
+    }
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 HARD RULES (violations will break the application):
 
-  R1. Output ONLY valid JSON. No prose. No markdown. No \`\`\`json fences. Start with { end with }
+  R1. Output ONLY valid NCF JSON. No prose. No markdown. No \`\`\`json fences. Start with { end with }
   R2. All node "id" values: lowercase, underscores only, globally unique, max 30 chars
   R3. Every link "source" and "target" must exactly match an existing node id
   R4. Every "prerequisites" entry must exactly match an existing node id
@@ -785,11 +878,13 @@ HARD RULES (violations will break the application):
   R8. Every category must have at least 2 nodes assigned to it
   R9. "relation" must be one of the 11 values defined above — no custom values
   R10. Do not repeat the same node id in learningPath more than once
-  R11. Every node MUST include "additionalInfo" (non-empty string) as defined in the ADDITIONAL INFO section
+  R11. Every node row MUST have a non-empty string in the info column (index 6) per the ADDITIONAL INFO guidelines
+  R12. N_cols, L_cols, LP_cols must appear EXACTLY as specified above — column ORDER is fixed and positional
+  R13. Do not output N_cols / L_cols / LP_cols as standalone arrays with just key names — they must be followed by their data arrays N / L / LP
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-OUTPUT JSON SCHEMA (follow exactly):
+OUTPUT NCF SCHEMA (follow exactly):
 
 ${SCHEMA_DISPLAY}
 
@@ -804,12 +899,244 @@ BEFORE YOU OUTPUT: Ask yourself:
 
 If any answer is "no" — revise before outputting.
 
-NOW OUTPUT THE JSON FOR: ${topic} at ${depth} depth.`;
+NOW OUTPUT THE NCF JSON FOR: ${topic} at ${depth} depth. Remember: columnar arrays only, _ncf field required, no verbose key-per-row objects in N/L/LP.`;
+}
+
+function buildSkeletonPrompt(topic, depth) {
+  // Take the full prompt and inject a SKELETON MODE header before the final line
+  const base = buildPrompt(topic, depth);
+  const insertBefore = 'NOW OUTPUT THE NCF JSON FOR:';
+  const skeletonMode = `GENERATION MODE: SKELETON ONLY (Part 1 of 3)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+COGNITIVE BUDGET STRATEGY — READ BEFORE GENERATING:
+
+  This is a 3-part generation. You are doing Part 1: STRUCTURE ONLY.
+
+  OUTPUT THE COMPLETE SKELETON:
+  → All node rows: id, label, cat, hot, dl, prereq — COMPLETE
+  → desc column: write the 1-sentence mentor-style description for every node
+  → info column: output exactly "" (empty string) — content comes in Parts 2 & 3
+  → analogy column: output null
+  → All links: complete
+  → Full learning path: complete (order, phase, reason, estimatedMinutes, keyInsight)
+  → Categories and metadata: complete
+
+  Writing "" for info is CORRECT in Part 1. It is NOT a rule violation.
+  R11 is suspended for Part 1 only — info will be filled via enrichment prompts.
+
+  WHY THIS ARCHITECTURE WORKS:
+  → You can focus entirely on semantic topology — get every distance and link perfect
+  → You will never run out of tokens before completing all nodes
+  → The app renders the graph immediately from the skeleton
+
+  CRITICAL: Do NOT skip nodes. Do NOT truncate the node list early. The skeleton
+  must contain 100% of the nodes you plan. Completeness here > everything else.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+`;
+  return base.replace(insertBefore, skeletonMode + insertBefore);
+}
+
+function buildEnrichPrompt(topic, depth, skeletonData, batchNum) {
+  // Sort nodes by learning path order for coherent batching
+  const lpOrder = new Map(skeletonData.learningPath.map(s => [s.nodeId, s.order]));
+  const sorted = [...skeletonData.nodes].sort((a, b) =>
+    (lpOrder.get(a.id) ?? 999) - (lpOrder.get(b.id) ?? 999)
+  );
+  const mid = Math.ceil(sorted.length / 2);
+  const thisBatch = batchNum === 1 ? sorted.slice(0, mid) : sorted.slice(mid);
+  const otherBatch = batchNum === 1 ? sorted.slice(mid) : sorted.slice(0, mid);
+
+  // Compact full node list (context, ~50 chars per node)
+  const allNodesList = skeletonData.nodes
+    .map(n => `  ${n.id} | "${n.label}" | ${n.category}`)
+    .join('\n');
+
+  // Nodes to enrich — include their links for context
+  const batchDetail = thisBatch.map(n => {
+    const links = skeletonData.links.filter(l => l.source === n.id || l.target === n.id);
+    const linkSummary = links.slice(0,4).map(l =>
+      `    ${l.relation}: ${l.source === n.id ? '→ '+l.target : l.source+' →'} (${l.label||''})`
+    ).join('\n');
+    return `  NODE: ${n.id} | "${n.label}" | prereqs: [${(n.prerequisites||[]).join(', ')}]\n${linkSummary}`;
+  }).join('\n\n');
+
+  const otherList = otherBatch.map(n => `  ${n.id}`).join(' · ');
+  const topicSlug = topic.toLowerCase().replace(/[^a-z0-9]+/g,'_').substring(0,25);
+
+  return `╔══════════════════════════════════════════════════════════════════════════════════╗
+║           NEURON — CONTENT ENRICHMENT  (Part ${batchNum + 1} of 3 · Batch ${batchNum} of 2)              ║
+╚══════════════════════════════════════════════════════════════════════════════════╝
+
+TOPIC:  ${topic}
+DEPTH:  ${depth}
+BATCH:  ${batchNum} of 2 — enriching ${thisBatch.length} of ${sorted.length} nodes
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CONTEXT — THE FULL MAP YOU PLANNED IN PART 1:
+
+All ${skeletonData.nodes.length} nodes (for cross-referencing — name them in your prose):
+${allNodesList}
+
+Nodes being enriched in the OTHER batch (do NOT include these in your output):
+${otherList}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+YOUR TASK: Write rich content for these ${thisBatch.length} nodes.
+
+NODES TO ENRICH (with their links for context):
+${batchDetail}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+HOW TO WRITE desc (1 sentence):
+  Mentor-style. Answer: "Why does THIS matter in the context of ${topic}?"
+  Create a MENTAL HOOK, not a dictionary definition.
+
+HOW TO WRITE info (${depth === 'researcher' ? '6-10+ paragraphs' : '4-6 paragraphs'}):
+  1. Explain what it is, why it matters — include an example or analogy
+  2. Reference SPECIFIC connected nodes by their label and explain WHY they connect
+     (you have the full node list above — use it)
+  3. Show how this node serves the bigger picture of "${topic}"
+  Write as an expert mentor. Reveal surprising connections. Continuous prose, no bullets.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+OUTPUT FORMAT — NCE (Neuron Content Enrichment):
+
+  Output ONLY valid JSON. No prose. No markdown fences. Start with { end with }
+
+  {
+    "_nce": "1",
+    "_id": "${topicSlug}_${depth}",
+    "batch": ${batchNum},
+    "E_cols": ["ni","desc","info","analogy"],
+    "E": [
+      ["node_id", "1-sentence desc", "full info paragraphs", "analogy string or null"],
+      ... one row per node in this batch ...
+    ]
+  }
+
+RULES:
+  E1. Include EXACTLY the ${thisBatch.length} nodes listed above — no more, no less
+  E2. Every ni must exactly match the node id from Part 1
+  E3. info must be non-empty — write full depth content per guidelines above
+  E4. Output ONLY the NCE JSON
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+NOW WRITE THE NCE FOR BATCH ${batchNum}: ${thisBatch.length} nodes, full ${depth} depth content.`;
 }
 
 // ══════════════════════════════════════════
 // SCHEMA VALIDATION
 // ══════════════════════════════════════════
+function parseNCF(raw) {
+  // Returns standard internal format expected by buildGraph() and validateSchema()
+  // Handles both NCF (_ncf field present) and legacy verbose JSON (no _ncf field)
+  const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
+  if (!data._ncf) return data; // Legacy format — pass through unchanged
+
+  const colIdx = (cols, key) => cols.indexOf(key);
+
+  // Expand nodes
+  const NC = data.N_cols;
+  const nodes = (data.N || []).map(row => ({
+    id:             row[colIdx(NC,'id')],
+    label:          row[colIdx(NC,'label')],
+    category:       row[colIdx(NC,'cat')],
+    hot:            row[colIdx(NC,'hot')] === 1 || row[colIdx(NC,'hot')] === true,
+    depth_level:    row[colIdx(NC,'dl')],
+    description:    row[colIdx(NC,'desc')] || '',
+    additionalInfo: row[colIdx(NC,'info')] || '',
+    prerequisites:  row[colIdx(NC,'prereq')] || [],
+    analogy:        row[colIdx(NC,'analogy')] || null,
+  }));
+
+  // Expand links
+  const LC = data.L_cols;
+  const links = (data.L || []).map(row => ({
+    source:   row[colIdx(LC,'src')],
+    target:   row[colIdx(LC,'tgt')],
+    relation: row[colIdx(LC,'rel')],
+    type:     row[colIdx(LC,'tp')],
+    weight:   row[colIdx(LC,'w')],
+    label:    row[colIdx(LC,'lbl')] || '',
+  }));
+
+  // Expand learning path
+  const LPC = data.LP_cols;
+  const learningPath = (data.LP || []).map(row => ({
+    nodeId:           row[colIdx(LPC,'ni')],
+    order:            row[colIdx(LPC,'o')],
+    phase:            row[colIdx(LPC,'ph')],
+    reason:           row[colIdx(LPC,'rs')],
+    estimatedMinutes: row[colIdx(LPC,'em')],
+    keyInsight:       row[colIdx(LPC,'ki')] || '',
+  }));
+
+  // Expand metadata
+  const m = data.meta || {};
+  const metadata = {
+    totalConcepts:          m.tc,
+    totalLinks:             m.tl,
+    centralNode:            m.central,
+    crossDomainInsights:    m.insights || [],
+    suggestedNextTopics:    m.next || [],
+    commonMisconceptions:   m.misconceptions || [],
+  };
+
+  return {
+    topic:        data.topic,
+    depth:        data.depth,
+    summary:      data.summary,
+    categories:   data.categories || [],
+    nodes,
+    links,
+    learningPath,
+    metadata,
+  };
+}
+
+function parseNCE(raw) {
+  const cleaned = raw.trim()
+    .replace(/^```(?:json)?\n?/,'').replace(/\n?```$/,'').trim();
+  const data = JSON.parse(cleaned);
+  if (!data._nce) throw new Error('Not a valid NCE object — missing _nce field');
+  const cols = data.E_cols || ['ni','desc','info','analogy'];
+  const ni = cols.indexOf('ni');
+  const di = cols.indexOf('desc');
+  const ii = cols.indexOf('info');
+  const ai = cols.indexOf('analogy');
+  const map = {};
+  (data.E || []).forEach(row => {
+    if (row[ni]) map[row[ni]] = {
+      description:    row[di] || '',
+      additionalInfo: row[ii] || '',
+      analogy:        row[ai] ?? null
+    };
+  });
+  return map;  // {nodeId: {description, additionalInfo, analogy}}
+}
+
+function mergeEnrichment(skeleton, ...enrichMaps) {
+  const merged = Object.assign({}, ...enrichMaps.filter(Boolean));
+  return {
+    ...skeleton,
+    nodes: skeleton.nodes.map(node => ({
+      ...node,
+      description:    merged[node.id]?.description    || node.description    || '',
+      additionalInfo: merged[node.id]?.additionalInfo || node.additionalInfo || '',
+      analogy:        merged[node.id]?.analogy        ?? node.analogy        ?? null,
+    }))
+  };
+}
+
 function validateSchema(data) {
   const errors = [];
 
@@ -897,44 +1224,300 @@ document.getElementById('go-json-direct').addEventListener('click', () => {
 function goToPromptScreen() {
   document.getElementById('s-land').classList.add('hidden');
   document.getElementById('s-prompt').classList.remove('hidden');
-  const titleEl = document.getElementById('pw-title');
-  const topicNameEl = document.getElementById('pw-topic-name');
-  topicNameEl.textContent = `"${appState.topic}"`;
-  const copySection = document.getElementById('copy-section');
-  const copyPill = document.getElementById('pill-copy');
-  const pastePill = document.getElementById('pill-paste');
-  const launchPill = document.getElementById('pill-launch');
-  const pasteLabel = document.getElementById('paste-section-label');
 
-  // Reset step pill states
-  copyPill.classList.remove('active');
-  pastePill.classList.remove('active');
-  launchPill.classList.remove('active');
+  appState.useMultiPart = (appState.depth === 'researcher' && !appState.fromJsonDirect);
+  appState.skeletonData = null;
+  appState.enrichBatches = [null, null];
+  appState.data = null;
 
-  if (appState.fromJsonDirect) {
-    // Hide header title and prompt copy step completely
-    if (titleEl) titleEl.style.display = 'none';
-    copySection.style.display = 'none';
-    copyPill.style.display = 'none';
-    pastePill.classList.add('active');
-    // Make paste label generic (no step number)
-    if (pasteLabel) pasteLabel.textContent = 'Paste the JSON output here';
-    // No prompt generation needed in this path
-    document.getElementById('gen-prompt').textContent = '';
-  } else {
-    // Show full 3-step flow and title
-    if (titleEl) titleEl.style.display = '';
-    copySection.style.display = '';
-    copyPill.style.display = '';
-    copyPill.classList.add('active');
-    pastePill.classList.remove('active');
-    if (pasteLabel) pasteLabel.textContent = 'Step 2 — Paste the JSON output here';
-    document.getElementById('gen-prompt').textContent = buildPrompt(appState.topic, appState.depth);
-  }
-
+  document.getElementById('pw-topic-name').textContent = `"${appState.topic}"`;
   document.getElementById('val-msg').style.display = 'none';
   document.getElementById('json-paste').value = '';
   document.getElementById('launch-btn').disabled = true;
+
+  // Remove any existing multi-part container
+  document.getElementById('mp-container')?.remove();
+
+  const titleEl     = document.getElementById('pw-title');
+  const copySection = document.getElementById('copy-section');
+  const copyPill    = document.getElementById('pill-copy');
+  const pastePill   = document.getElementById('pill-paste');
+  const launchPill  = document.getElementById('pill-launch');
+  const pasteLabel  = document.getElementById('paste-section-label');
+  const stepPills   = document.querySelector('.step-pills');
+
+  // Reset pill states
+  [copyPill, pastePill, launchPill].forEach(p => {
+    p.classList.remove('active','done');
+  });
+
+  if (appState.useMultiPart) {
+    // Hide the single-paste UI entirely
+    titleEl.style.display = '';
+    if (stepPills) stepPills.style.display = 'none';
+    copySection.style.display = 'none';
+    // Hide all pw-section divs (single paste + schema)
+    document.querySelectorAll('.pw-section').forEach(el => el.style.display = 'none');
+    document.getElementById('launch-btn').style.display = 'none';
+    renderMultiPartUI();
+  } else {
+    // Show the single-paste UI (restore if previously hidden)
+    if (stepPills) stepPills.style.display = 'flex';
+    document.querySelectorAll('.pw-section').forEach(el => el.style.display = '');
+    document.getElementById('launch-btn').style.display = '';
+    copyPill.style.display = '';
+
+    if (appState.fromJsonDirect) {
+      titleEl.style.display = 'none';
+      copySection.style.display = 'none';
+      copyPill.style.display = 'none';
+      pastePill.classList.add('active');
+      pasteLabel.textContent = 'Paste the JSON output here';
+      document.getElementById('gen-prompt').textContent = '';
+    } else {
+      titleEl.style.display = '';
+      copySection.style.display = '';
+      copyPill.classList.add('active');
+      pasteLabel.textContent = 'Step 2 — Paste the JSON output here';
+      document.getElementById('gen-prompt').textContent =
+        buildPrompt(appState.topic, appState.depth);
+    }
+  }
+}
+
+function renderMultiPartUI() {
+  const wrap = document.querySelector('.prompt-wrap');
+  const container = document.createElement('div');
+  container.id = 'mp-container';
+  container.innerHTML = `
+    <div class="mp-row">
+      <div class="mp-slot active" id="mp-slot-1" style="flex:1;min-width:0;">
+        <div class="mp-slot-hdr">
+          <div class="mp-badge active" id="mp-badge-1">1</div>
+          <div class="mp-slot-title">Skeleton</div>
+          <div class="mp-slot-sub">Structure only · graph renders instantly after this</div>
+        </div>
+        <div class="prompt-box" id="mp-prompt-1" style="max-height:160px"></div>
+        <div class="copy-row" style="margin-top:10px">
+          <button class="btn-copy" id="mp-copy-1">⎘ Copy Prompt</button>
+          <div style="font-family:var(--mono);font-size:0.55rem;color:var(--muted);display:flex;align-items:center">
+            → paste AI response below
+          </div>
+        </div>
+        <textarea class="paste-area" id="mp-paste-1" style="margin-top:10px;min-height:80px"
+          placeholder="Paste skeleton NCF response here…"></textarea>
+        <div class="mp-status" id="mp-status-1"></div>
+      </div>
+
+      <div class="mp-slot locked" id="mp-slot-2" style="flex:1;min-width:0;">
+        <div class="mp-slot-hdr">
+          <div class="mp-badge pending" id="mp-badge-2">2</div>
+          <div class="mp-slot-title">Enrich — Batch A</div>
+          <div class="mp-slot-sub" id="mp-sub-2">Unlocks after Skeleton</div>
+        </div>
+        <div class="prompt-box" id="mp-prompt-2"
+          style="max-height:130px;font-size:0.58rem;color:var(--muted)">
+          Waiting for Skeleton…
+        </div>
+        <div class="copy-row" style="margin-top:10px">
+          <button class="btn-copy" id="mp-copy-2" disabled>⎘ Copy Prompt</button>
+        </div>
+        <textarea class="paste-area" id="mp-paste-2" style="margin-top:10px;min-height:80px"
+          placeholder="Paste NCE enrichment response here…" disabled></textarea>
+        <div class="mp-status" id="mp-status-2"></div>
+      </div>
+
+      <div class="mp-slot locked" id="mp-slot-3" style="flex:1;min-width:0;">
+        <div class="mp-slot-hdr">
+          <div class="mp-badge pending" id="mp-badge-3">3</div>
+          <div class="mp-slot-title">Enrich — Batch B</div>
+          <div class="mp-slot-sub" id="mp-sub-3">Unlocks after Batch A</div>
+        </div>
+        <div class="prompt-box" id="mp-prompt-3"
+          style="max-height:130px;font-size:0.58rem;color:var(--muted)">
+          Waiting for Batch A…
+        </div>
+        <div class="copy-row" style="margin-top:10px">
+          <button class="btn-copy" id="mp-copy-3" disabled>⎘ Copy Prompt</button>
+        </div>
+        <textarea class="paste-area" id="mp-paste-3" style="margin-top:10px;min-height:80px"
+          placeholder="Paste NCE enrichment response here…" disabled></textarea>
+        <div class="mp-status" id="mp-status-3"></div>
+      </div>
+    </div>
+
+    <div class="mp-launch-hint" id="mp-launch-hint">
+      Graph renders after Skeleton · Popups fill in after Batches A &amp; B
+    </div>
+    <button class="btn-launch" id="mp-launch-btn" disabled>
+      ⬡ Visualize Knowledge Graph →
+    </button>
+  `;
+
+  // Insert into .prompt-wrap (before the hidden launch btn so layout is clean)
+  wrap.appendChild(container);
+
+  // Set skeleton prompt
+  document.getElementById('mp-prompt-1').textContent =
+    buildSkeletonPrompt(appState.topic, appState.depth);
+
+  // Wire copy buttons
+  [1,2,3].forEach(slot => {
+    const btn = document.getElementById(`mp-copy-${slot}`);
+    btn.addEventListener('click', () => {
+      const txt = document.getElementById(`mp-prompt-${slot}`).textContent;
+      if (!txt || txt.startsWith('Waiting')) return;
+      if (navigator.clipboard?.writeText) {
+        navigator.clipboard.writeText(txt).then(() => {
+          btn.textContent = '✓ Copied!';
+          btn.classList.add('copied');
+          setTimeout(() => { btn.textContent = '⎘ Copy Prompt'; btn.classList.remove('copied'); }, 2500);
+        });
+      } else {
+        const r = document.createRange();
+        r.selectNodeContents(document.getElementById(`mp-prompt-${slot}`));
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(r);
+        btn.textContent = 'Select + Ctrl+C';
+        setTimeout(() => { btn.textContent = '⎘ Copy Prompt'; }, 3000);
+      }
+    });
+  });
+
+  // Wire paste handlers
+  [1,2,3].forEach(slot => {
+    let timer;
+    const area = document.getElementById(`mp-paste-${slot}`);
+    if (!area) return;
+    area.addEventListener('input', function() {
+      clearTimeout(timer);
+      timer = setTimeout(() => handleMpPaste(slot, this.value), 600);
+    });
+  });
+
+  // Wire launch button
+  document.getElementById('mp-launch-btn').addEventListener('click', () => {
+    if (!appState.skeletonData) return;
+    const enrichMaps = appState.enrichBatches.filter(Boolean);
+    appState.data = enrichMaps.length
+      ? mergeEnrichment(appState.skeletonData, ...enrichMaps)
+      : appState.skeletonData;
+    document.getElementById('s-prompt').classList.add('hidden');
+    document.getElementById('s-graph').classList.remove('hidden');
+    buildGraph(appState.data);
+  });
+}
+
+function handleMpPaste(slot, raw) {
+  const statusEl = document.getElementById(`mp-status-${slot}`);
+  const txt = raw.trim().replace(/^```(?:json)?\n?/,'').replace(/\n?```$/,'').trim();
+  if (!txt) { statusEl.className = 'mp-status'; statusEl.textContent = ''; return; }
+
+  if (slot === 1) {
+    // Parse as NCF skeleton
+    let parsed, expanded;
+    try {
+      parsed = JSON.parse(txt);
+      expanded = parseNCF(parsed);
+    } catch(e) {
+      statusEl.className = 'mp-status err';
+      statusEl.textContent = `JSON error: ${e.message}`;
+      return;
+    }
+    const result = validateSchema(expanded);
+    if (!result.ok) {
+      statusEl.className = 'mp-status err';
+      statusEl.textContent = result.errors.slice(0,2).join(' · ');
+      return;
+    }
+
+    appState.skeletonData = expanded;
+    statusEl.className = 'mp-status ok';
+    statusEl.textContent =
+      `✓ Skeleton: ${expanded.nodes.length} nodes · ${expanded.links.length} links · Graph ready`;
+
+    // Mark slot 1 done
+    const slotEl = document.getElementById('mp-slot-1');
+    if (slotEl) slotEl.classList.replace('active','complete');
+    const b1 = document.getElementById('mp-badge-1');
+    if (b1) { b1.className = 'mp-badge done'; b1.textContent = '✓'; }
+
+    // Generate enrich prompts
+    document.getElementById('mp-prompt-2').textContent =
+      buildEnrichPrompt(appState.topic, appState.depth, expanded, 1);
+    document.getElementById('mp-prompt-3').textContent =
+      buildEnrichPrompt(appState.topic, appState.depth, expanded, 2);
+
+    // Unlock slot 2
+    unlockMpSlot(2);
+
+    // Enable launch with skeleton-only label
+    const lbtn = document.getElementById('mp-launch-btn');
+    lbtn.disabled = false;
+    lbtn.textContent = '⬡ Visualize Skeleton →';
+    document.getElementById('mp-launch-hint').textContent =
+      `${expanded.nodes.length} nodes loaded — add Batches A & B for full popup content`;
+
+  } else {
+    // Parse as NCE enrichment
+    let nceMap;
+    try { nceMap = parseNCE(txt); }
+    catch(e) {
+      statusEl.className = 'mp-status err';
+      statusEl.textContent = `NCE error: ${e.message}`;
+      return;
+    }
+
+    const batchIdx = slot - 2; // slot 2 → index 0, slot 3 → index 1
+    appState.enrichBatches[batchIdx] = nceMap;
+    const count = Object.keys(nceMap).length;
+
+    statusEl.className = 'mp-status ok';
+    statusEl.textContent = `✓ ${count} nodes enriched`;
+
+    // Mark done
+    const slotEl = document.getElementById(`mp-slot-${slot}`);
+    if (slotEl) slotEl.classList.replace('active','complete');
+    const badge = document.getElementById(`mp-badge-${slot}`);
+    if (badge) { badge.className = 'mp-badge done'; badge.textContent = '✓'; }
+
+    // Unlock next slot
+    if (slot === 2) unlockMpSlot(3);
+
+    // Update launch button
+    const totalEnriched = appState.enrichBatches.filter(Boolean)
+      .reduce((sum, m) => sum + Object.keys(m).length, 0);
+    const totalNodes = appState.skeletonData?.nodes.length || 0;
+    const lbtn = document.getElementById('mp-launch-btn');
+    if (totalEnriched >= totalNodes && totalNodes > 0) {
+      lbtn.textContent = '⬡ Visualize Full Graph →';
+      document.getElementById('mp-launch-hint').textContent =
+        'All nodes enriched — full popup content ready';
+    } else {
+      lbtn.textContent = `⬡ Visualize (${totalEnriched}/${totalNodes} enriched) →`;
+    }
+
+    // Live-update data if graph already open
+    if (!document.getElementById('s-graph').classList.contains('hidden')
+        && appState.skeletonData) {
+      appState.data = mergeEnrichment(
+        appState.skeletonData, ...appState.enrichBatches.filter(Boolean)
+      );
+      // Popup reads from appState.data on next open — no re-render needed
+    }
+  }
+}
+
+function unlockMpSlot(slot) {
+  const el = document.getElementById(`mp-slot-${slot}`);
+  if (!el) return;
+  el.classList.remove('locked'); el.classList.add('active');
+  const ta = document.getElementById(`mp-paste-${slot}`);
+  const btn = document.getElementById(`mp-copy-${slot}`);
+  if (ta) ta.disabled = false;
+  if (btn) btn.disabled = false;
+  const badge = document.getElementById(`mp-badge-${slot}`);
+  if (badge) { badge.className = 'mp-badge active'; }
 }
 
 document.getElementById('back-land').addEventListener('click', () => {
@@ -1027,7 +1610,8 @@ function validatePaste(raw) {
     return;
   }
 
-  const result = validateSchema(parsed);
+  const expanded = parseNCF(parsed);
+  const result = validateSchema(expanded);
   if (!result.ok) {
     vm.className = 'err'; vm.style.display = 'block';
     const fullError = `Schema errors:\n${result.errors.join('\n')}`;
@@ -1035,9 +1619,9 @@ function validatePaste(raw) {
     return;
   }
 
-  appState.data = parsed;
+  appState.data = expanded;
   vm.className = 'ok'; vm.style.display = 'block';
-  vm.textContent = `✓ Valid! ${parsed.nodes.length} nodes · ${parsed.links.length} links · ${parsed.learningPath.length} learning steps`;
+  vm.textContent = `✓ Valid! ${expanded.nodes.length} nodes · ${expanded.links.length} links · ${expanded.learningPath.length} learning steps`;
   btn.disabled = false;
   document.getElementById('pill-launch').classList.add('active');
 }
@@ -1252,52 +1836,44 @@ function buildGraph(data) {
     tip.style.left = x+'px'; tip.style.top = y+'px';
   }
 
-  // ── NODE POPUP ──
-  const popupOverlay = document.getElementById('node-popup-overlay');
-  const popupTitle = document.getElementById('node-popup-title');
-  const popupCat = document.getElementById('node-popup-cat');
-  const popupDesc = document.getElementById('node-popup-desc');
-  const popupPrereq = document.getElementById('node-popup-prereq');
-  const popupTags = document.getElementById('node-popup-tags');
-  const popupInfo = document.getElementById('node-popup-info');
+  // ── NODE DETAIL PANEL (floating card) ──
+  const detailPanel = document.getElementById('node-detail-panel');
+  const detailTitle = document.getElementById('node-detail-title');
+  const detailCat = document.getElementById('node-detail-cat');
+  const detailDesc = document.getElementById('node-detail-desc');
+  const detailInfo = document.getElementById('node-detail-info');
 
-  function openNodePopup(d) {
+  function showNodeDetail(d) {
+    if (d.type === 'root') return;
+
     const cat = data.categories.find(c => c.id === (d.type === 'category' ? d.id : d.category));
-    popupTitle.textContent = d.label;
-    popupTitle.style.color = d.color;
-    popupCat.textContent = (cat?.label || '').toUpperCase();
-    popupCat.style.color = d.color;
-    popupDesc.textContent = d.description || '';
 
-    if (d.type === 'concept') {
-      const prereqs = d.prerequisites?.filter(Boolean) || [];
-      if (prereqs.length) {
-        popupTags.innerHTML = prereqs.map(pid => {
-          const pn = nodeMap[pid];
-          return `<span class="node-popup-tag">${pn?.label || pid}</span>`;
-        }).join('');
-        popupPrereq.style.display = 'block';
-      } else {
-        popupPrereq.style.display = 'none';
-      }
-      const extra = d.additionalInfo && String(d.additionalInfo).trim();
-      popupInfo.textContent = extra || 'No additional info for this concept. Use a map generated with the updated prompt to see extended explanations here.';
-    } else {
-      popupPrereq.style.display = 'none';
-      const inCategory = conceptNodes.filter(c => c.category === d.id).map(c => c.label);
-      popupInfo.textContent = inCategory.length
-        ? `Concepts in this domain: ${inCategory.join(', ')}.`
-        : (d.description || '');
+    if (detailTitle) {
+      detailTitle.textContent = d.label;
+      detailTitle.style.color = d.color;
     }
-    popupOverlay.classList.add('show');
-  }
+    if (detailCat) {
+      detailCat.textContent = (cat?.label || '').toUpperCase();
+      detailCat.style.color = d.color;
+    }
+    if (detailDesc) {
+      detailDesc.textContent = d.description || '';
+    }
 
-  function closeNodePopup() {
-    popupOverlay.classList.remove('show');
+    if (detailInfo) {
+      if (d.type === 'concept') {
+        // Always read live data so enrichment arriving post-render takes effect
+        const liveNode = appState.data?.nodes?.find(n => n.id === d.id);
+        const extra = ((liveNode?.additionalInfo || d.additionalInfo) || '').trim();
+        detailInfo.textContent = extra || 'No additional info for this concept. Use a map generated with the updated prompt to see extended explanations here.';
+      } else {
+        const inCategory = conceptNodes.filter(c => c.category === d.id).map(c => c.label);
+        detailInfo.textContent = inCategory.length
+          ? `Concepts in this domain: ${inCategory.join(', ')}.`
+          : (d.description || '');
+      }
+    }
   }
-
-  document.getElementById('node-popup-close').addEventListener('click', closeNodePopup);
-  popupOverlay.addEventListener('click', (e) => { if (e.target === popupOverlay) closeNodePopup(); });
 
   function applyFocus(d) {
     activeNode = d.id;
@@ -1323,23 +1899,12 @@ function buildGraph(data) {
     highlightLpStep(d.id);
   }
 
-  // ── CLICK: first click = focus, second click = open details ──
+  // ── CLICK: focus + show details in sidebar ──
   NE.on('click', (e, d) => {
     e.stopPropagation();
     if (d.type === 'root') return;
-    if (activeNode === d.id) {
-      openNodePopup(d);
-      return;
-    }
     applyFocus(d);
-  });
-
-  // ── RIGHT-CLICK: open details directly (and focus so graph matches) ──
-  NE.on('contextmenu', (e, d) => {
-    e.preventDefault();
-    if (d.type === 'root') return;
-    if (activeNode !== d.id) applyFocus(d);
-    openNodePopup(d);
+    showNodeDetail(d);
   });
 
   svg.on('click', clearFocus);
@@ -1350,7 +1915,6 @@ function buildGraph(data) {
     LE.classed('hi',false).classed('dim',false);
     document.querySelectorAll('.lp-step').forEach(el=>el.classList.remove('active'));
     tip.classList.remove('show');
-    closeNodePopup();
   }
 
   // ── LEGEND ──
@@ -1532,13 +2096,119 @@ document.getElementById('lp-close').addEventListener('click', () => {
   document.getElementById('lp-toggle').classList.remove('on');
 });
 
+// ── NODE DETAIL PANEL DRAG / RESIZE / COLLAPSE ──
+(function initNodeDetailPanelChrome() {
+  const panel = document.getElementById('node-detail-panel');
+  if (!panel) return;
+
+  const header = panel.querySelector('.node-detail-header');
+  const toggleBtn = document.getElementById('node-detail-toggle');
+  const body = document.getElementById('node-detail-body');
+  const resizeHandle = document.getElementById('node-detail-resize');
+
+  // Dragging
+  if (header) {
+    let dragging = false;
+    let startX = 0, startY = 0, startLeft = 0, startTop = 0;
+
+    const onMove = (e) => {
+      if (!dragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      let left = startLeft + dx;
+      let top = startTop + dy;
+      const maxLeft = window.innerWidth - panel.offsetWidth - 8;
+      const maxTop = window.innerHeight - 80;
+      left = Math.max(8, Math.min(maxLeft, left));
+      top = Math.max(56, Math.min(maxTop, top));
+      panel.style.left = left + 'px';
+      panel.style.top = top + 'px';
+    };
+
+    const onUp = () => {
+      dragging = false;
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    };
+
+    header.addEventListener('mousedown', (e) => {
+      if ((e.target && e.target.id === 'node-detail-toggle') || e.button !== 0) return;
+      dragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      const rect = panel.getBoundingClientRect();
+      startLeft = rect.left;
+      startTop = rect.top;
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+      e.preventDefault();
+    });
+  }
+
+  // Collapse
+  if (toggleBtn && body) {
+    toggleBtn.addEventListener('click', () => {
+      const collapsed = panel.classList.toggle('collapsed');
+      toggleBtn.textContent = collapsed ? '▢' : '−';
+    });
+  }
+
+  // Resize from bottom-right corner
+  if (resizeHandle) {
+    let resizing = false;
+    let startX = 0, startY = 0, startW = 0, startH = 0;
+
+    const onResizeMove = (e) => {
+      if (!resizing) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      const minW = 260, maxW = Math.min(520, window.innerWidth - 40);
+      const minH = 160, maxH = window.innerHeight - 120;
+      const newW = Math.max(minW, Math.min(maxW, startW + dx));
+      const newH = Math.max(minH, Math.min(maxH, startH + dy));
+      panel.style.width = newW + 'px';
+      panel.style.height = newH + 'px';
+      panel.style.maxHeight = 'none';
+    };
+
+    const onResizeUp = () => {
+      resizing = false;
+      document.removeEventListener('mousemove', onResizeMove);
+      document.removeEventListener('mouseup', onResizeUp);
+    };
+
+    resizeHandle.addEventListener('mousedown', (e) => {
+      if (e.button !== 0) return;
+      resizing = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      const rect = panel.getBoundingClientRect();
+      startW = rect.width;
+      startH = rect.height;
+      document.addEventListener('mousemove', onResizeMove);
+      document.addEventListener('mouseup', onResizeUp);
+      e.preventDefault();
+    });
+  }
+})();
+
 // ── GRAPH BACK ──
 document.getElementById('graph-back').addEventListener('click', () => {
   if (simulation) simulation.stop();
   document.getElementById('lp-panel').classList.remove('open');
   document.getElementById('s-graph').classList.add('hidden');
-  document.getElementById('s-land').classList.remove('hidden');
-  document.getElementById('topic-input').value = '';
+
+  // For multi-part researcher flows, return to the prompt "control room"
+  if (appState.useMultiPart) {
+    document.getElementById('s-prompt').classList.remove('hidden');
+  } else {
+    // For single-paste flows, behave as "New Map"
+    appState.skeletonData = null;
+    appState.enrichBatches = [null, null];
+    appState.useMultiPart = false;
+    document.getElementById('s-land').classList.remove('hidden');
+    document.getElementById('topic-input').value = '';
+  }
 });
 
 // ══════════════════════════════════════════
