@@ -1,0 +1,2163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neuron — Knowledge Graph Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,300;0,400;0,600;0,700;0,800;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<style>
+:root {
+  --bg: #020508;
+  --bg2: #080d14;
+  --bg3: #0c1520;
+  --border: rgba(255,255,255,0.06);
+  --accent: #00e5ff;
+  --accent2: #c77dff;
+  --green: #69f0ae;
+  --yellow: #ffd93d;
+  --red: #ff6b6b;
+  --text: #d0e8f4;
+  --muted: #2a4a5e;
+  --muted2: #4a7a90;
+  --mono: 'Space Mono', monospace;
+  --sans: 'Exo 2', sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);font-family:var(--sans);color:var(--text);width:100vw;height:100vh;overflow:hidden;}
+
+/* ── CANVAS ── */
+#stars{position:fixed;inset:0;z-index:0;}
+
+/* ── SCREENS ── */
+.screen{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;transition:opacity 0.4s,transform 0.4s;}
+.screen.hidden{opacity:0;pointer-events:none;transform:scale(0.97);}
+
+/* ── SCREEN 1: LANDING ── */
+#s-land{background:radial-gradient(ellipse at 50% 30%, rgba(0,229,255,0.04) 0%, transparent 65%);}
+.land-logo{font-size:3rem;font-weight:800;letter-spacing:-1px;margin-bottom:6px;
+  background:linear-gradient(135deg,#00e5ff 0%,#c77dff 50%,#69f0ae 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.land-tag{font-family:var(--mono);font-size:0.65rem;color:var(--muted2);letter-spacing:2px;
+  text-transform:uppercase;margin-bottom:48px;}
+.land-card{background:var(--bg2);border:1px solid var(--border);border-radius:20px;
+  padding:36px 40px;width:520px;max-width:95vw;}
+.lc-label{font-family:var(--mono);font-size:0.6rem;color:var(--muted2);text-transform:uppercase;
+  letter-spacing:1.5px;margin-bottom:8px;}
+.lc-input{width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--border);
+  border-radius:10px;padding:13px 16px;color:var(--text);font-family:var(--sans);font-size:0.95rem;
+  font-weight:600;outline:none;transition:border-color 0.2s,background 0.2s;margin-bottom:22px;}
+.lc-input:focus{border-color:rgba(0,229,255,0.35);background:rgba(0,229,255,0.03);}
+.lc-input::placeholder{color:var(--muted);font-weight:400;}
+.depth-row{display:flex;gap:8px;margin-bottom:28px;}
+.depth-btn{flex:1;padding:10px 8px;border-radius:9px;border:1px solid var(--border);
+  background:transparent;color:var(--muted2);font-family:var(--mono);font-size:0.6rem;
+  cursor:pointer;transition:all 0.2s;text-align:center;letter-spacing:0.5px;}
+.depth-btn .d-icon{font-size:1.1rem;display:block;margin-bottom:4px;}
+.depth-btn .d-name{display:block;font-weight:700;margin-bottom:2px;}
+.depth-btn .d-hint{font-size:0.5rem;opacity:0.6;line-height:1.4;}
+.depth-btn.active{border-color:var(--accent);background:rgba(0,229,255,0.07);color:var(--accent);}
+.depth-btn:hover:not(.active){background:rgba(255,255,255,0.03);color:var(--text);}
+.btn-primary{width:100%;padding:14px;border-radius:10px;border:none;
+  background:linear-gradient(135deg,rgba(0,229,255,0.15),rgba(199,125,255,0.15));
+  border:1px solid rgba(0,229,255,0.25);color:var(--accent);font-family:var(--mono);
+  font-size:0.75rem;font-weight:700;letter-spacing:1px;cursor:pointer;
+  transition:all 0.2s;text-transform:uppercase;}
+.btn-primary:hover{background:linear-gradient(135deg,rgba(0,229,255,0.22),rgba(199,125,255,0.22));
+  border-color:rgba(0,229,255,0.45);}
+.btn-primary:disabled{opacity:0.35;cursor:not-allowed;}
+.btn-secondary{width:100%;margin-top:10px;padding:11px 14px;border-radius:10px;border:1px solid var(--border);
+  background:transparent;color:var(--muted2);font-family:var(--mono);font-size:0.62rem;
+  letter-spacing:0.8px;cursor:pointer;transition:all 0.2s;text-transform:uppercase;}
+.btn-secondary:hover{border-color:rgba(0,229,255,0.3);color:var(--accent);
+  background:rgba(0,229,255,0.06);}
+
+/* ── SCREEN 2: PROMPT ── */
+.screen{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;transition:opacity 0.4s,transform 0.4s;overflow:hidden;}
+.screen.hidden{opacity:0;pointer-events:none;transform:scale(0.97);}
+
+/* ── SCREEN 2: PROMPT ── */
+#s-prompt{background:radial-gradient(ellipse at 70% 20%, rgba(199,125,255,0.04) 0%, transparent 60%);
+  overflow-y:auto;justify-content:flex-start;padding:32px 0;}
+.prompt-wrap{width:700px;max-width:95vw;}
+.pw-hdr{display:flex;align-items:center;gap:14px;margin-bottom:24px;}
+.pw-back{background:transparent;border:1px solid var(--border);border-radius:8px;
+  padding:7px 14px;color:var(--muted2);font-family:var(--mono);font-size:0.6rem;
+  cursor:pointer;transition:all 0.15s;}
+.pw-back:hover{border-color:rgba(255,255,255,0.15);color:var(--text);}
+.pw-title{font-size:1.1rem;font-weight:700;}
+.pw-title span{font-weight:300;opacity:0.5;font-style:italic;}
+.step-pills{display:flex;gap:6px;margin-bottom:20px;}
+.sp{padding:5px 12px;border-radius:20px;font-family:var(--mono);font-size:0.58rem;
+  border:1px solid var(--border);color:var(--muted);display:flex;align-items:center;gap:5px;}
+.sp.done{border-color:rgba(105,240,174,0.35);background:rgba(105,240,174,0.06);color:var(--green);}
+.sp.active{border-color:rgba(0,229,255,0.35);background:rgba(0,229,255,0.06);color:var(--accent);}
+.pw-section{background:var(--bg2);border:1px solid var(--border);border-radius:16px;
+  padding:20px 22px;margin-bottom:14px;}
+.pw-sl{font-family:var(--mono);font-size:0.6rem;color:var(--muted2);text-transform:uppercase;
+  letter-spacing:1.5px;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.pw-sl::after{content:'';flex:1;height:1px;background:var(--border);}
+.prompt-box{background:rgba(0,0,0,0.4);border-radius:10px;padding:14px;
+  font-family:var(--mono);font-size:0.63rem;line-height:1.8;color:#7aabbc;
+  max-height:220px;overflow-y:auto;white-space:pre-wrap;border:1px solid rgba(255,255,255,0.04);}
+.prompt-box::-webkit-scrollbar{width:3px;}
+.prompt-box::-webkit-scrollbar-thumb{background:rgba(0,229,255,0.15);border-radius:2px;}
+.copy-row{display:flex;gap:8px;margin-top:10px;}
+.btn-copy{padding:9px 18px;border-radius:8px;border:1px solid rgba(0,229,255,0.25);
+  background:rgba(0,229,255,0.05);color:var(--accent);font-family:var(--mono);font-size:0.65rem;
+  cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px;}
+.btn-copy:hover{background:rgba(0,229,255,0.1);}
+.btn-copy.copied{border-color:rgba(105,240,174,0.4);background:rgba(105,240,174,0.07);color:var(--green);}
+.llm-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+.llm-chip{padding:4px 10px;border-radius:6px;border:1px solid var(--border);
+  font-family:var(--mono);font-size:0.58rem;color:var(--muted2);}
+.paste-area{width:100%;min-height:100px;max-height:180px;background:rgba(0,0,0,0.35);
+  border:1px solid var(--border);border-radius:10px;padding:14px;
+  font-family:var(--mono);font-size:0.63rem;color:var(--text);resize:vertical;outline:none;
+  transition:border-color 0.2s;line-height:1.7;}
+.paste-area:focus{border-color:rgba(0,229,255,0.3);}
+.paste-area::placeholder{color:var(--muted);}
+#val-msg{font-family:var(--mono);font-size:0.62rem;padding:8px 12px;border-radius:7px;
+  margin-top:8px;display:none;}
+#val-msg.ok{background:rgba(105,240,174,0.08);border:1px solid rgba(105,240,174,0.25);color:var(--green);}
+#val-msg.err{background:rgba(255,107,107,0.08);border:1px solid rgba(255,107,107,0.25);color:var(--red);}
+.val-err-calm{margin:0 0 8px;font-family:inherit;font-size:0.62rem;color:var(--muted2);line-height:1.5;}
+.val-err-pre{margin:0 0 10px;padding:10px;max-height:160px;overflow-y:auto;background:rgba(0,0,0,0.25);
+  border-radius:6px;font-size:0.6rem;white-space:pre-wrap;word-break:break-all;}
+.val-err-copy-row{margin-top:8px;}
+.val-err-copy-row .btn-copy{font-size:0.62rem;}
+.schema-toggle{font-family:var(--mono);font-size:0.58rem;color:var(--muted2);
+  cursor:pointer;padding:6px 0;display:inline-flex;align-items:center;gap:5px;
+  border-bottom:1px dashed rgba(255,255,255,0.08);}
+.schema-box{background:rgba(0,0,0,0.4);border-radius:8px;padding:12px;margin-top:10px;
+  font-family:var(--mono);font-size:0.58rem;color:var(--muted2);line-height:1.7;
+  max-height:140px;overflow-y:auto;border:1px solid rgba(255,255,255,0.04);display:none;}
+.btn-launch{width:100%;padding:14px;border-radius:10px;border:none;
+  background:linear-gradient(135deg,rgba(0,229,255,0.12),rgba(199,125,255,0.12));
+  border:1px solid rgba(0,229,255,0.2);color:var(--accent);font-family:var(--mono);
+  font-size:0.75rem;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:1px;}
+.btn-launch:hover:not(:disabled){background:linear-gradient(135deg,rgba(0,229,255,0.2),rgba(199,125,255,0.2));}
+.btn-launch:disabled{opacity:0.3;cursor:not-allowed;}
+
+/* ── SCREEN 3: GRAPH ── */
+#s-graph{z-index:5;}
+#graph-svg{position:fixed;inset:0;z-index:1;cursor:grab;}
+#graph-svg:active{cursor:grabbing;}
+#graph-ui{position:fixed;inset:0;z-index:10;pointer-events:none;}
+
+/* TOPBAR */
+#topbar{position:absolute;top:0;left:0;right:0;height:56px;
+  background:linear-gradient(180deg,rgba(2,5,8,0.97),transparent);
+  display:flex;align-items:center;padding:0 18px;gap:12px;pointer-events:all;}
+.tb-back{background:transparent;border:1px solid var(--border);border-radius:7px;
+  padding:6px 12px;color:var(--muted2);font-family:var(--mono);font-size:0.58rem;
+  cursor:pointer;transition:all 0.15s;}
+.tb-back:hover{color:var(--text);border-color:rgba(255,255,255,0.15);}
+.tb-topic{font-size:0.85rem;font-weight:700;letter-spacing:0.3px;}
+.tb-depth{font-family:var(--mono);font-size:0.55rem;padding:3px 10px;border-radius:4px;
+  border:1px solid var(--border);color:var(--muted2);}
+.tb-stats{font-family:var(--mono);font-size:0.55rem;color:var(--muted);margin-left:auto;}
+
+#search{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;
+  padding:6px 12px 6px 28px;color:var(--text);font-family:var(--mono);font-size:0.65rem;
+  width:180px;outline:none;transition:border-color 0.2s;}
+#search:focus{border-color:rgba(0,229,255,0.3);}
+#search::placeholder{color:var(--muted);}
+.si{position:absolute;right:calc(18px + 156px);top:50%;transform:translateY(-50%);
+  font-size:10px;color:var(--muted);pointer-events:none;}
+
+/* ZOOM CONTROLS */
+#zctrl{position:absolute;top:68px;left:14px;pointer-events:all;display:flex;flex-direction:column;gap:4px;}
+.zb{width:28px;height:28px;background:rgba(2,5,8,0.85);border:1px solid var(--border);
+  border-radius:6px;color:var(--muted2);font-size:12px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+.zb:hover{background:rgba(0,229,255,0.07);color:var(--accent);border-color:rgba(0,229,255,0.2);}
+
+/* LEGEND */
+#legend{position:absolute;bottom:16px;left:14px;pointer-events:all;
+  background:rgba(2,5,8,0.88);border:1px solid var(--border);border-radius:12px;
+  padding:12px 14px;backdrop-filter:blur(12px);max-height:calc(100vh - 150px);overflow-y:auto;}
+#legend::-webkit-scrollbar{width:3px;}
+#legend::-webkit-scrollbar-thumb{background:rgba(0,229,255,0.1);}
+.leg-hdr{font-family:var(--mono);font-size:0.52rem;color:var(--muted);
+  text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;}
+.leg-item{display:flex;align-items:center;gap:7px;padding:3px 5px;border-radius:5px;
+  cursor:pointer;transition:background 0.15s;margin-bottom:1px;}
+.leg-item:hover{background:rgba(255,255,255,0.04);}
+.leg-item.active{background:rgba(255,255,255,0.05);}
+.leg-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.leg-lbl{font-size:0.65rem;color:var(--muted2);white-space:nowrap;}
+
+/* LEARNING PATH PANEL */
+#lp-panel{position:absolute;right:0;top:56px;width:290px;height:calc(100vh - 56px);
+  background:rgba(2,5,8,0.92);border-left:1px solid var(--border);
+  padding:18px 16px;overflow-y:auto;pointer-events:all;
+  transform:translateX(100%);transition:transform 0.35s cubic-bezier(0.16,1,0.3,1);}
+#lp-panel::-webkit-scrollbar{width:3px;}
+#lp-panel::-webkit-scrollbar-thumb{background:rgba(0,229,255,0.1);}
+#lp-panel.open{transform:translateX(0);}
+.lp-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.lp-title{font-size:0.85rem;font-weight:700;color:var(--accent);}
+.lp-close{background:transparent;border:none;color:var(--muted2);cursor:pointer;font-size:14px;padding:2px;}
+.lp-intro{font-size:0.68rem;color:var(--muted2);line-height:1.6;margin-bottom:18px;
+  padding-bottom:14px;border-bottom:1px solid var(--border);}
+.lp-step{display:flex;gap:10px;margin-bottom:16px;cursor:pointer;padding:8px;
+  border-radius:8px;transition:background 0.15s;border:1px solid transparent;}
+.lp-step:hover{background:rgba(255,255,255,0.03);}
+.lp-step.active{background:rgba(0,229,255,0.05);border-color:rgba(0,229,255,0.15);}
+.lp-step.done{opacity:0.45;}
+.lp-num{width:22px;height:22px;border-radius:50%;border:1.5px solid;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:0.55rem;font-weight:700;margin-top:1px;}
+.lp-step.active .lp-num{background:rgba(0,229,255,0.1);}
+.lp-step.done .lp-num{background:rgba(105,240,174,0.1);}
+.lp-body{}
+.lp-name{font-size:0.78rem;font-weight:600;margin-bottom:3px;}
+.lp-why{font-size:0.63rem;color:var(--muted2);line-height:1.5;}
+.lp-time{font-family:var(--mono);font-size:0.52rem;color:var(--muted);margin-top:4px;}
+.lp-progress{margin-top:18px;padding-top:14px;border-top:1px solid var(--border);}
+.lp-prog-pct{font-size:1.5rem;font-weight:700;color:var(--accent);margin-bottom:4px;
+  line-height:1.2;}
+.lp-prog-lbl{font-family:var(--mono);font-size:0.55rem;color:var(--muted2);margin-bottom:6px;}
+.prog-bar{height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));
+  border-radius:2px;transition:width 0.5s;}
+
+/* LP TOGGLE BUTTON */
+#lp-toggle{position:absolute;right:14px;top:68px;pointer-events:all;
+  background:rgba(2,5,8,0.85);border:1px solid var(--border);border-radius:8px;
+  padding:7px 12px;color:var(--muted2);font-family:var(--mono);font-size:0.6rem;
+  cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px;}
+#lp-toggle:hover{border-color:rgba(0,229,255,0.25);color:var(--accent);}
+#lp-toggle.on{border-color:rgba(0,229,255,0.3);background:rgba(0,229,255,0.06);color:var(--accent);}
+
+/* NODE TOOLTIP */
+#ntip{position:absolute;pointer-events:none;width:230px;z-index:50;
+  background:rgba(2,5,8,0.94);border:1px solid rgba(255,255,255,0.07);
+  border-radius:12px;padding:14px;backdrop-filter:blur(16px);
+  opacity:0;transition:opacity 0.15s;top:0;left:0;}
+#ntip.show{opacity:1;}
+.nt-cat{font-family:var(--mono);font-size:0.52rem;text-transform:uppercase;
+  letter-spacing:1px;opacity:0.6;margin-bottom:4px;}
+.nt-name{font-size:0.9rem;font-weight:700;margin-bottom:7px;line-height:1.2;}
+.nt-desc{font-size:0.67rem;color:var(--muted2);line-height:1.6;margin-bottom:9px;}
+.nt-hot{display:inline-flex;align-items:center;gap:3px;font-family:var(--mono);
+  font-size:0.52rem;padding:2px 8px;border-radius:4px;
+  background:rgba(255,107,107,0.1);color:#ff9090;border:1px solid rgba(255,107,107,0.2);}
+.nt-prereq{margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
+.nt-pl{font-family:var(--mono);font-size:0.5rem;color:var(--muted);
+  text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+.nt-ptag{display:inline-block;font-size:0.6rem;padding:2px 7px;border-radius:4px;
+  background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--muted2);
+  margin:2px 2px 0 0;}
+.nt-hint{font-family:var(--mono);font-size:0.5rem;color:var(--muted);margin-top:8px;
+  padding-top:8px;border-top:1px solid var(--border);}
+
+/* NODE POPUP (additional info) */
+#node-popup-overlay{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.6);
+  backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;
+  padding:24px;box-sizing:border-box;}
+#node-popup-overlay.show{display:flex;}
+#node-popup{background:var(--bg2);border:1px solid var(--border);border-radius:16px;
+  max-width:520px;width:100%;max-height:85vh;display:flex;flex-direction:column;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);overflow:hidden;}
+.node-popup-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+  padding:18px 20px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.node-popup-title{font-size:1.1rem;font-weight:700;line-height:1.3;}
+.node-popup-cat{font-family:var(--mono);font-size:0.55rem;text-transform:uppercase;
+  letter-spacing:1px;color:var(--muted2);margin-top:4px;}
+.node-popup-close{background:transparent;border:none;color:var(--muted2);cursor:pointer;
+  font-size:18px;padding:2px 6px;line-height:1;border-radius:6px;flex-shrink:0;}
+.node-popup-close:hover{color:var(--text);background:rgba(255,255,255,0.06);}
+.node-popup-body{padding:18px 20px;overflow-y:auto;flex:1;}
+.node-popup-body::-webkit-scrollbar{width:4px;}
+.node-popup-body::-webkit-scrollbar-thumb{background:rgba(0,229,255,0.2);border-radius:2px;}
+.node-popup-desc{font-size:0.8rem;color:var(--muted2);line-height:1.6;margin-bottom:16px;
+  padding-bottom:14px;border-bottom:1px solid var(--border);}
+.node-popup-prereq{margin-bottom:14px;}
+.node-popup-prereq .node-popup-label{font-family:var(--mono);font-size:0.52rem;
+  color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.node-popup-tags{display:flex;flex-wrap:wrap;gap:6px;}
+.node-popup-tag{padding:4px 10px;border-radius:6px;border:1px solid var(--border);
+  font-size:0.65rem;color:var(--muted2);background:rgba(255,255,255,0.03);}
+.node-popup-info-label{font-family:var(--mono);font-size:0.52rem;color:var(--muted);
+  text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+.node-popup-info{font-size:0.8rem;color:var(--text);line-height:1.75;white-space:pre-wrap;}
+
+/* FOOTER (graph screen) */
+#graph-footer{position:absolute;bottom:0;left:0;right:0;height:48px;
+  background:linear-gradient(0deg,rgba(2,5,8,0.97),transparent 30%);
+  border-top:1px solid var(--border);display:flex;align-items:center;
+  justify-content:space-between;padding:0 16px;gap:16px;pointer-events:none;}
+#footer-progress{display:flex;align-items:center;gap:10px;min-width:0;flex:0 1 auto;}
+#footer-progress.hidden{display:none;}
+.footer-prog-lbl{font-family:var(--mono);font-size:0.55rem;color:var(--muted2);
+  text-transform:uppercase;letter-spacing:1px;white-space:nowrap;}
+.footer-prog-bar{width:120px;height:6px;background:rgba(255,255,255,0.06);
+  border-radius:3px;overflow:hidden;}
+.footer-prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));
+  border-radius:3px;transition:width 0.4s;}
+.footer-prog-pct{font-family:var(--mono);font-size:0.6rem;font-weight:700;color:var(--accent);}
+#hint-bar{font-family:var(--mono);font-size:0.52rem;color:var(--muted);
+  text-align:right;line-height:1.6;pointer-events:none;flex-shrink:0;}
+
+/* SVG classes */
+.link{stroke-opacity:0.18;stroke-width:1;fill:none;}
+.link.cross{stroke-opacity:0.1;stroke-dasharray:4,6;}
+.link.hi{stroke-opacity:0.8!important;stroke-width:1.8;}
+.link.dim{stroke-opacity:0.02!important;}
+.node{cursor:pointer;}
+.node.dim{opacity:0.08;}
+
+/* ── MULTI-PART SLOTS ── */
+.mp-row{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap;margin-bottom:10px;}
+.mp-slot{background:var(--bg2);border:1px solid var(--border);border-radius:16px;
+  padding:18px 20px;margin-bottom:10px;transition:border-color 0.3s,opacity 0.3s;}
+.mp-slot.active{border-color:rgba(0,229,255,0.2);}
+.mp-slot.complete{border-color:rgba(105,240,174,0.2);}
+.mp-slot.locked{opacity:0.35;pointer-events:none;}
+.mp-slot-hdr{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.mp-badge{width:20px;height:20px;border-radius:50%;border:1.5px solid;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:0.52rem;font-weight:700;}
+.mp-badge.pending{border-color:var(--muted);color:var(--muted);}
+.mp-badge.active{border-color:var(--accent);color:var(--accent);background:rgba(0,229,255,0.08);}
+.mp-badge.done{border-color:var(--green);color:var(--green);background:rgba(105,240,174,0.08);}
+.mp-slot-title{font-size:0.82rem;font-weight:700;}
+.mp-slot-sub{font-family:var(--mono);font-size:0.52rem;color:var(--muted2);margin-left:auto;}
+.mp-status{font-family:var(--mono);font-size:0.6rem;margin-top:8px;padding:5px 10px;
+  border-radius:6px;display:none;}
+.mp-status.ok{display:block;color:var(--green);background:rgba(105,240,174,0.06);
+  border:1px solid rgba(105,240,174,0.2);}
+.mp-status.err{display:block;color:var(--red);background:rgba(255,107,107,0.06);
+  border:1px solid rgba(255,107,107,0.2);}
+.mp-launch-hint{font-family:var(--mono);font-size:0.55rem;color:var(--muted2);
+  text-align:center;margin-bottom:8px;}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+
+<!-- ══════════════════════════════════════════
+     SCREEN 1: LANDING
+══════════════════════════════════════════ -->
+<div class="screen" id="s-land">
+  <div class="land-logo">⬡ NEURON</div>
+  <div class="land-tag">// semantic knowledge graph builder</div>
+  <div class="land-card">
+    <div class="lc-label">Topic to explore</div>
+    <input class="lc-input" id="topic-input" placeholder="e.g. Quantum Computing, Stoicism, System Design…" maxlength="80" />
+    <div class="lc-label">Depth level</div>
+    <div class="depth-row">
+      <button class="depth-btn active" data-depth="explorer">
+        <span class="d-icon">🌍</span>
+        <span class="d-name">EXPLORER</span>
+        <span class="d-hint">~15 nodes<br>Big picture</span>
+      </button>
+      <button class="depth-btn" data-depth="practitioner">
+        <span class="d-icon">🔬</span>
+        <span class="d-name">PRACTITIONER</span>
+        <span class="d-hint">~40 nodes<br>Patterns & insights</span>
+      </button>
+      <button class="depth-btn" data-depth="researcher">
+        <span class="d-icon">🧬</span>
+        <span class="d-name">RESEARCHER</span>
+        <span class="d-hint">~80 nodes<br>Cross-domain depth</span>
+      </button>
+    </div>
+    <button class="btn-primary" id="go-prompt">Generate Knowledge Prompt →</button>
+    <button class="btn-secondary" id="go-json-direct">Already have JSON? Paste & visualize →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN 2: PROMPT + PASTE
+══════════════════════════════════════════ -->
+<div class="screen hidden" id="s-prompt">
+  <div class="prompt-wrap">
+    <div class="pw-hdr">
+      <button class="pw-back" id="back-land">← Back</button>
+      <div>
+        <div class="pw-title" id="pw-title">Build map for <span id="pw-topic-name">—</span></div>
+      </div>
+    </div>
+
+    <div class="step-pills">
+      <div class="sp done" id="pill-topic">✓ Topic defined</div>
+      <div class="sp active" id="pill-copy">① Copy prompt</div>
+      <div class="sp" id="pill-paste">② Paste result</div>
+      <div class="sp" id="pill-launch">③ Launch map</div>
+    </div>
+
+    <div class="pw-section" id="copy-section">
+      <div class="pw-sl" id="copy-section-label">Step 1 — Copy this prompt into any AI (Claude, GPT, Gemini…)</div>
+      <div class="prompt-box" id="gen-prompt"></div>
+      <div class="copy-row">
+        <button class="btn-copy" id="copy-btn">⎘ Copy Prompt</button>
+        <div style="font-family:var(--mono);font-size:0.58rem;color:var(--muted);
+          display:flex;align-items:center;">Works great with:</div>
+        <div class="llm-chips">
+          <div class="llm-chip">Claude</div>
+          <div class="llm-chip">GPT-4</div>
+          <div class="llm-chip">Gemini</div>
+          <div class="llm-chip">Mistral</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pw-section">
+      <div class="pw-sl" id="paste-section-label">Step 2 — Paste the JSON output here</div>
+      <textarea class="paste-area" id="json-paste"
+        placeholder="Paste the full JSON response from the AI here…"></textarea>
+      <div id="val-msg"></div>
+      <div style="margin-top:10px;">
+        <div class="schema-toggle" id="schema-toggle">▸ View expected JSON schema</div>
+        <div class="schema-box" id="schema-box"></div>
+      </div>
+    </div>
+
+    <button class="btn-launch" id="launch-btn" disabled>⬡ Visualize Knowledge Graph →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN 3: GRAPH
+══════════════════════════════════════════ -->
+<div class="screen hidden" id="s-graph">
+  <svg id="graph-svg"></svg>
+  <div id="graph-ui">
+    <div id="topbar">
+      <button class="tb-back" id="graph-back">← New Map</button>
+      <div class="tb-topic" id="tb-topic"></div>
+      <div class="tb-depth" id="tb-depth"></div>
+      <div class="tb-stats" id="tb-stats"></div>
+      <div style="position:relative;">
+        <span class="si">⌕</span>
+        <input id="search" placeholder="Search concepts…" />
+      </div>
+    </div>
+
+    <div id="zctrl">
+      <button class="zb" id="zin">+</button>
+      <button class="zb" id="zout">−</button>
+      <button class="zb" id="zfit" title="Fit">⊡</button>
+    </div>
+
+    <div id="legend">
+      <div class="leg-hdr">Domains</div>
+      <div id="leg-items"></div>
+    </div>
+
+    <button id="lp-toggle">🎓 Learning Path</button>
+
+    <div id="lp-panel">
+      <div class="lp-hdr">
+        <div class="lp-title">🎓 Learning Path</div>
+        <button class="lp-close" id="lp-close">✕</button>
+      </div>
+      <div class="lp-intro" id="lp-intro"></div>
+      <div id="lp-steps"></div>
+      <div class="lp-progress">
+        <div class="lp-prog-pct" id="prog-pct">0%</div>
+        <div class="lp-prog-lbl" id="prog-lbl">0 / 0 completed</div>
+        <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div id="ntip">
+      <div class="nt-cat" id="nt-cat"></div>
+      <div class="nt-name" id="nt-name"></div>
+      <div class="nt-desc" id="nt-desc"></div>
+      <div class="nt-hot" id="nt-hot" style="display:none">🔥 Key concept</div>
+      <div class="nt-prereq" id="nt-prereq" style="display:none">
+        <div class="nt-pl">Prerequisites</div>
+        <div id="nt-pre-tags"></div>
+      </div>
+      <div class="nt-hint">Click to focus connections · Click again for details · Right-click to open details</div>
+    </div>
+
+    <div id="graph-footer">
+      <div id="footer-progress" class="hidden">
+        <span class="footer-prog-lbl">Learning path</span>
+        <div class="footer-prog-bar"><div class="footer-prog-fill" id="footer-prog-fill" style="width:0%"></div></div>
+        <span class="footer-prog-pct" id="footer-prog-pct">0%</span>
+      </div>
+      <div id="hint-bar">drag to pan · scroll to zoom · hover to preview · click to focus · click again or right-click for details</div>
+    </div>
+
+    <div id="node-popup-overlay">
+      <div id="node-popup">
+        <div class="node-popup-hdr">
+          <div>
+            <div class="node-popup-title" id="node-popup-title"></div>
+            <div class="node-popup-cat" id="node-popup-cat"></div>
+          </div>
+          <button class="node-popup-close" id="node-popup-close" aria-label="Close">✕</button>
+        </div>
+        <div class="node-popup-body">
+          <div class="node-popup-desc" id="node-popup-desc"></div>
+          <div class="node-popup-prereq" id="node-popup-prereq" style="display:none">
+            <div class="node-popup-label">Prerequisites</div>
+            <div class="node-popup-tags" id="node-popup-tags"></div>
+          </div>
+          <div class="node-popup-info-label">Additional info</div>
+          <div class="node-popup-info" id="node-popup-info"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// STARS
+// ══════════════════════════════════════════
+const sc = document.getElementById('stars');
+const cx = sc.getContext('2d');
+let stars=[];
+function mkStars(){
+  sc.width=innerWidth; sc.height=innerHeight;
+  stars=Array.from({length:180},()=>({x:Math.random()*sc.width,y:Math.random()*sc.height,
+    r:Math.random()*1.2,t:Math.random()*Math.PI*2,s:0.001+Math.random()*0.002}));
+}
+function drawStars(){
+  cx.fillStyle='#020508'; cx.fillRect(0,0,sc.width,sc.height);
+  stars.forEach(s=>{s.t+=s.s;const a=0.1+0.3*Math.abs(Math.sin(s.t));
+    cx.beginPath();cx.arc(s.x,s.y,s.r,0,Math.PI*2);cx.fillStyle=`rgba(180,210,255,${a})`;cx.fill();});
+  requestAnimationFrame(drawStars);
+}
+mkStars(); drawStars();
+window.addEventListener('resize',mkStars);
+
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let appState = {
+  topic: '',
+  depth: 'explorer',
+  data: null,
+  completedSteps: new Set(),
+  activeNode: null,
+  fromJsonDirect: false,
+  useMultiPart: false,
+  skeletonData: null,
+  enrichBatches: [null, null]
+};
+
+// ══════════════════════════════════════════
+// SCHEMA
+// ══════════════════════════════════════════
+const SCHEMA_DISPLAY = `{
+  "_ncf": "1",
+  "topic": "string",
+  "depth": "explorer | practitioner | researcher",
+  "summary": "string",
+
+  "categories": [
+    {
+      "id": "string",
+      "label": "string",
+      "color": "#hex",
+      "icon": "single emoji",
+      "description": "string"
+    }
+  ],
+
+  "N_cols": ["id","label","cat","hot","dl","desc","info","prereq","analogy"],
+  "N": [
+    ["node_id", "Label", "category_id", 1, 1,
+     "description string",
+     "additionalInfo string",
+     ["prereq_id"],
+     null]
+  ],
+
+  "L_cols": ["src","tgt","rel","tp","w","lbl"],
+  "L": [
+    ["source_id","target_id","relation_type","hierarchical|semantic|cross_domain",1|2|3,"optional label"]
+  ],
+
+  "LP_cols": ["ni","o","ph","rs","em","ki"],
+  "LP": [
+    ["node_id", 1, "Phase Name", "reason string", 15, "key insight string"]
+  ],
+
+  "meta": {
+    "tc": number,
+    "tl": number,
+    "central": "node_id",
+    "insights": ["string"],
+    "next": ["string"],
+    "misconceptions": ["string"]
+  }
+}
+
+Column definitions:
+  N_cols:  id=node id, label=display name, cat=category id, hot=1|0, dl=depth level 1-3,
+           desc=description, info=additionalInfo, prereq=prerequisites array, analogy=string|null
+  L_cols:  src=source node id, tgt=target node id, rel=relation type, tp=link type,
+           w=weight 1-3, lbl=label string
+  LP_cols: ni=nodeId, o=order number, ph=phase name, rs=reason, em=estimatedMinutes, ki=keyInsight`;
+
+document.getElementById('schema-box').textContent = SCHEMA_DISPLAY;
+
+// ══════════════════════════════════════════
+// PROMPT GENERATION
+// ══════════════════════════════════════════
+function buildPrompt(topic, depth) {
+return `╔══════════════════════════════════════════════════════════════════════════════════╗
+║                     NEURON — SEMANTIC KNOWLEDGE GRAPH PROMPT                     ║
+║                              Model-Agnostic v1.0                                 ║
+╚══════════════════════════════════════════════════════════════════════════════════╝
+
+You are a Semantic Knowledge Cartographer.
+
+Your task is to map the topic below as a LIVING KNOWLEDGE GRAPH — the way an expert
+mind actually stores and retrieves understanding. Not a textbook index. Not a Wikipedia
+outline. A semantic web where every concept lives at the correct distance from every
+other concept, connected by the invisible threads of meaning.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TOPIC:     ${topic}
+DEPTH:     ${depth}   [ explorer = 12-18 nodes | practitioner = 30-45 nodes | researcher = 60-90 nodes ]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PHILOSOPHY — READ THIS BEFORE GENERATING ANYTHING:
+
+  The human brain encodes knowledge through SEMANTIC PROXIMITY.
+  Things that mean similar things cluster together in memory.
+  Things that are USED together or FEEL similar also pull toward each other —
+  even across completely different domains.
+
+  This is why:
+  → Entropy (thermodynamics) and Uncertainty (information theory) feel like the same idea
+  → Stoic resilience and Antifragility (Taleb) and Buddhist non-attachment are the same concept in different clothes
+  → Eigenvectors (linear algebra) and Principal Components (statistics) and Latent Space (ML) are one idea at different zoom levels
+
+  Your graph must reflect this. Categories are just loose gravity wells.
+  MEANING is what pulls nodes together. The force simulation will do the spatial work —
+  your job is to encode the WEIGHT and NATURE of every connection correctly.
+
+  A good graph should let a beginner see the shape of the territory before they
+  enter it. A great graph should show an expert something they hadn't consciously
+  connected before.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DEPTH GUIDELINES:
+
+  EXPLORER (12-18 nodes)
+  → The 10,000 ft view. What are the 5-6 gravity wells of this topic?
+  → Every node must be something a beginner needs to know EXISTS before they can learn anything else
+  → Links are mostly structural — what feeds into what
+  → Learning path = the order a great teacher would introduce these ideas in a first lecture
+  → Minimum 2 cross-domain bridges (concepts that live in other fields but are the SAME idea)
+
+  PRACTITIONER (30-45 nodes)
+  → The working map. What does someone need to actually USE this knowledge?
+  → Include: patterns, failure modes, trade-offs, and the "hidden" concepts that tutorials skip
+  → Links include contrast (X vs Y, they live close because comparison is how the brain learns them together)
+  → At least 5 cross-domain bridges
+  → Learning path should have clear "unlock" moments — nodes that suddenly make 3 others make sense
+
+  RESEARCHER (60-90 nodes)
+  → The full territory including the edges and the fog
+  → Include: historical origins, dead-ends, open questions, minority viewpoints, and the surprising bridges
+  → At least 15 cross-domain bridges — this is where quantum physics meets philosophy, where thermodynamics meets information theory
+  → Some nodes should represent things still debated or unknown (mark depth_level: 3)
+  → Learning path is a genuine curriculum with phases, not just a sequence
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LINK TYPES — THIS IS THE MOST IMPORTANT PART:
+
+  Every link must have a "relation" that describes the SEMANTIC NATURE of the connection.
+  This is what makes the graph feel like a mind, not a flowchart.
+
+  Use exactly one of these values for the "relation" field:
+
+  "feeds_into"      → A is required to understand B (prerequisite, foundational)
+  "is_a_type_of"    → A is a specific case of B (taxonomy — use sparingly)
+  "contrasts_with"  → A and B are best understood as a pair/opposition (e.g. synchronous vs async)
+  "enables"         → Understanding A makes B dramatically easier to learn
+  "is_analog_of"    → A and B are the same concept in different domains (cross-domain bridge)
+  "emerges_from"    → B is a surprising consequence or property that arises from A
+  "is_applied_as"   → A in theory becomes B in practice
+  "historically_led_to" → A came before B and caused or inspired it (researcher depth)
+  "is_often_confused_with" → A and B are frequently mixed up — this link is a warning
+  "is_the_inverse_of"  → A and B are mirror operations (e.g. encoding/decoding, encryption/decryption)
+  "shares_structure_with" → A and B have the same underlying shape/pattern (deep analogy)
+
+  Link weight controls VISUAL DISTANCE in the simulation:
+  weight: 3 = very close (almost the same thing)
+  weight: 2 = clearly related
+  weight: 1 = connected but distant
+
+  The "is_analog_of" and "shares_structure_with" links are the most valuable.
+  They are the ones that create "I never thought of it that way" moments.
+  Prioritize them. They are rarely obvious.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+NODE DESCRIPTIONS — HOW TO WRITE THEM:
+
+  A node description is NOT a dictionary definition.
+  It is a one-sentence answer to: "Why does this matter in the context of ${topic}?"
+
+  BAD:  "Entropy is a measure of disorder in a thermodynamic system."
+  GOOD: "Entropy is why complex systems naturally drift toward chaos — understanding
+         it tells you why maintaining any ordered system requires constant energy."
+
+  BAD:  "A load balancer distributes incoming network traffic across servers."
+  GOOD: "A load balancer is the traffic cop that prevents any single server from
+         becoming the bottleneck that takes down your whole system."
+
+  The description should create a MENTAL HOOK — something the user can attach
+  future knowledge to. Write it the way a mentor would explain it, not a textbook.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ADDITIONAL INFO — HOW TO WRITE IT (required for every node):
+
+  "additionalInfo" is shown in a popup when the user clicks a node. It must give the
+  learner enough to understand this concept in context and how the whole map fits together.
+
+  For EACH node, write additionalInfo that:
+  1. Explains the concept sufficiently — what it is, why it matters, and (if helpful) a brief example or analogy.
+  2. Describes how this node connects to its dependent and related nodes (prerequisites, links). Name specific node concepts where it helps. Make the interconnections explicit so the learner sees how pieces depend on each other.
+  3. States how this concept serves the main topic — its role in the bigger picture. A learner who reads all additionalInfo across the map (in learning-path order or by exploring) should gain a coherent, depth-appropriate understanding of the topic.
+
+  Length scales with depth (roughly half to one page per node when printed):
+  → EXPLORER: 2–4 short paragraphs (3–6 sentences total). Focus on clarity and place in the map.
+  → PRACTITIONER: 4–6 paragraphs. Include connections, trade-offs, and how it fits the topic.
+  → RESEARCHER: 6–10+ paragraphs. Deeper nuance, cross-domain ties, and how it serves the main topic.
+
+  Write in clear, continuous prose. No bullet lists unless the model deems them clearer. The tone should be mentor-like: one expert explaining to a curious learner. If a node has no prerequisites, still explain how it connects to the rest of the graph and serves the topic.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LEARNING PATH — HOW TO ORDER IT:
+
+  The learning path is not just topological sort of prerequisites.
+  It is a PEDAGOGICAL SEQUENCE — the order that minimizes confusion and maximizes
+  the number of "aha" moments.
+
+  Rules for ordering:
+  1. Start with the concept that gives the most CONTEXT for everything else
+     (often not the simplest concept, but the one that makes others make sense)
+  2. Concrete before abstract. Examples before theory.
+  3. Group nodes that are best learned as a pair (contrasts_with links) — learn them in sequence
+  4. "Unlock" nodes first — a node that has 3+ dependents should come early
+  5. End with the nodes that integrate everything (synthesis nodes, or applied nodes)
+
+  For each step, the "reason" field must answer:
+  "Why NOW? What does learning this HERE unlock that learning it earlier or later wouldn't?"
+
+  estimatedMinutes should reflect genuine cognitive effort:
+  → Simple factual node: 5-10 min
+  → Conceptual node requiring examples: 15-25 min
+  → Deep node requiring practice: 30-60 min
+  → Cross-domain insight node: 20-40 min (these take time to land)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CATEGORY COLORS — GUIDELINES:
+
+  Colors should feel semantically appropriate, not random:
+  → Foundation/structural concepts: cool blues (#4fc3f7, #00b8d4)
+  → Dynamic/process concepts: warm ambers/oranges (#ffb74d, #ff9a3c)
+  → Abstract/theoretical concepts: purples (#c77dff, #9c64ff)
+  → Applied/practical concepts: greens (#69f0ae, #a8ff78)
+  → Warning/tricky concepts: reds/pinks (#ff6b6b, #f48fb1)
+  → Meta/philosophical concepts: cyans (#00e5ff, #80deea)
+
+  Colors must be distinct enough to read on a very dark (#020508) background.
+  Do NOT use colors darker than #558 in any channel.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CROSS-DOMAIN INSIGHT GUIDELINES:
+
+  The "crossDomainInsights" in metadata should be 2-3 sentence observations that
+  a knowledgeable generalist would find genuinely illuminating.
+
+  BAD:  "Quantum computing is related to physics."
+  GOOD: "The concept of superposition in quantum computing is structurally identical
+         to how a neural network holds probabilistic activations before a decision
+         boundary — both are systems that exist in multiple states until forced to commit."
+
+  These insights are what elevate the map from reference material to genuine education.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+OUTPUT FORMAT — NCF (Neuron Compact Format):
+
+  To reduce token usage while preserving all content, output a COLUMNAR JSON format.
+  Keys are defined ONCE at the top of each section; values are positional arrays.
+  This is the ONLY accepted output format. Do not use the verbose key-per-row format.
+
+  COLUMN ORDER IS FIXED AND MANDATORY:
+  N_cols  (nodes):        ["id","label","cat","hot","dl","desc","info","prereq","analogy"]
+  L_cols  (links):        ["src","tgt","rel","tp","w","lbl"]
+  LP_cols (learningPath): ["ni","o","ph","rs","em","ki"]
+
+  COLUMN DEFINITIONS:
+  Nodes:
+    id      = node id (lowercase_underscores, globally unique, max 30 chars)
+    label   = display name (max 4 words)
+    cat     = category id (must match a category)
+    hot     = 1 (true) or 0 (false)
+    dl      = depth_level: 1 | 2 | 3
+    desc    = description (mentor-style, 1 sentence, why this matters HERE)
+    info    = additionalInfo (full paragraphs per ADDITIONAL INFO guidelines — do NOT shorten)
+    prereq  = prerequisites array of node ids (empty array [] if none)
+    analogy = analogy string or null
+
+  Links:
+    src = source node id
+    tgt = target node id
+    rel = relation (one of the 11 relation types)
+    tp  = "hierarchical" | "semantic" | "cross_domain"
+    w   = weight: 1 | 2 | 3
+    lbl = label string (3-5 words, or empty string "")
+
+  LearningPath:
+    ni = nodeId
+    o  = order number
+    ph = phase name
+    rs = reason (why NOW)
+    em = estimatedMinutes
+    ki = keyInsight (single sentence)
+
+  META FIELDS (short keys):
+    tc            = totalConcepts
+    tl            = totalLinks
+    central       = centralNode (node id)
+    insights      = crossDomainInsights (array of strings)
+    next          = suggestedNextTopics (array of strings)
+    misconceptions = commonMisconceptions (array of strings)
+
+  EXAMPLE (2 nodes, 1 link, 1 learning path step):
+  {
+    "_ncf": "1",
+    "topic": "...",
+    "depth": "explorer",
+    "summary": "...",
+    "categories": [{"id":"foundations","label":"Foundations","color":"#4fc3f7","icon":"🌱","description":"..."}],
+    "N_cols": ["id","label","cat","hot","dl","desc","info","prereq","analogy"],
+    "N": [
+      ["cap_theorem","CAP Theorem","foundations",1,1,"CAP is why every distributed system is a compromise.","CAP Theorem states that...",[],"Like choosing a phone plan — unlimited calls OR data, never both."],
+      ["sharding","Sharding","foundations",0,2,"Sharding is how you scale a database horizontally.","When your data grows beyond one server...",[" cap_theorem"],null]
+    ],
+    "L_cols": ["src","tgt","rel","tp","w","lbl"],
+    "L": [
+      ["cap_theorem","sharding","feeds_into","hierarchical",3,"partitioning requires tradeoffs"]
+    ],
+    "LP_cols": ["ni","o","ph","rs","em","ki"],
+    "LP": [
+      ["cap_theorem",1,"Foundations","CAP first — it reframes every database decision.",25,"Every distributed system is a negotiation."],
+      ["sharding",2,"Core Mechanics","Now that CAP is clear, sharding is the practical response.",20,"Scale by splitting data, but you inherit coordination costs."]
+    ],
+    "meta": {
+      "tc": 2, "tl": 1, "central": "cap_theorem",
+      "insights": ["CAP Theorem is structurally identical to the Uncertainty Principle..."],
+      "next": ["Distributed Systems Internals"],
+      "misconceptions": ["CAP means pick 2-of-3 forever — actually the tradeoff is dynamic"]
+    }
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+HARD RULES (violations will break the application):
+
+  R1. Output ONLY valid NCF JSON. No prose. No markdown. No \`\`\`json fences. Start with { end with }
+  R2. All node "id" values: lowercase, underscores only, globally unique, max 30 chars
+  R3. Every link "source" and "target" must exactly match an existing node id
+  R4. Every "prerequisites" entry must exactly match an existing node id
+  R5. Every "learningPath" entry "nodeId" must exactly match an existing node id
+  R6. "hot" nodes must not exceed 30% of total nodes (mark only the truly critical ones)
+  R7. depth_level values: 1 = foundational, 2 = intermediate, 3 = advanced/frontier
+  R8. Every category must have at least 2 nodes assigned to it
+  R9. "relation" must be one of the 11 values defined above — no custom values
+  R10. Do not repeat the same node id in learningPath more than once
+  R11. Every node row MUST have a non-empty string in the info column (index 6) per the ADDITIONAL INFO guidelines
+  R12. N_cols, L_cols, LP_cols must appear EXACTLY as specified above — column ORDER is fixed and positional
+  R13. Do not output N_cols / L_cols / LP_cols as standalone arrays with just key names — they must be followed by their data arrays N / L / LP
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+OUTPUT NCF SCHEMA (follow exactly):
+
+${SCHEMA_DISPLAY}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BEFORE YOU OUTPUT: Ask yourself:
+  ✦ Does this map feel like how an expert THINKS about this topic, or like a Wikipedia outline?
+  ✦ Are the cross-domain bridges genuinely surprising and insightful?
+  ✦ Would a beginner be able to trace the learning path and feel it was the right order?
+  ✦ Do the node descriptions create mental hooks, or just define terms?
+  ✦ Does every link have a reason to exist, or are some just there to fill space?
+
+If any answer is "no" — revise before outputting.
+
+NOW OUTPUT THE NCF JSON FOR: ${topic} at ${depth} depth. Remember: columnar arrays only, _ncf field required, no verbose key-per-row objects in N/L/LP.`;
+}
+
+function buildSkeletonPrompt(topic, depth) {
+  // Take the full prompt and inject a SKELETON MODE header before the final line
+  const base = buildPrompt(topic, depth);
+  const insertBefore = 'NOW OUTPUT THE NCF JSON FOR:';
+  const skeletonMode = `GENERATION MODE: SKELETON ONLY (Part 1 of 3)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+COGNITIVE BUDGET STRATEGY — READ BEFORE GENERATING:
+
+  This is a 3-part generation. You are doing Part 1: STRUCTURE ONLY.
+
+  OUTPUT THE COMPLETE SKELETON:
+  → All node rows: id, label, cat, hot, dl, prereq — COMPLETE
+  → desc column: write the 1-sentence mentor-style description for every node
+  → info column: output exactly "" (empty string) — content comes in Parts 2 & 3
+  → analogy column: output null
+  → All links: complete
+  → Full learning path: complete (order, phase, reason, estimatedMinutes, keyInsight)
+  → Categories and metadata: complete
+
+  Writing "" for info is CORRECT in Part 1. It is NOT a rule violation.
+  R11 is suspended for Part 1 only — info will be filled via enrichment prompts.
+
+  WHY THIS ARCHITECTURE WORKS:
+  → You can focus entirely on semantic topology — get every distance and link perfect
+  → You will never run out of tokens before completing all nodes
+  → The app renders the graph immediately from the skeleton
+
+  CRITICAL: Do NOT skip nodes. Do NOT truncate the node list early. The skeleton
+  must contain 100% of the nodes you plan. Completeness here > everything else.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+`;
+  return base.replace(insertBefore, skeletonMode + insertBefore);
+}
+
+function buildEnrichPrompt(topic, depth, skeletonData, batchNum) {
+  // Sort nodes by learning path order for coherent batching
+  const lpOrder = new Map(skeletonData.learningPath.map(s => [s.nodeId, s.order]));
+  const sorted = [...skeletonData.nodes].sort((a, b) =>
+    (lpOrder.get(a.id) ?? 999) - (lpOrder.get(b.id) ?? 999)
+  );
+  const mid = Math.ceil(sorted.length / 2);
+  const thisBatch = batchNum === 1 ? sorted.slice(0, mid) : sorted.slice(mid);
+  const otherBatch = batchNum === 1 ? sorted.slice(mid) : sorted.slice(0, mid);
+
+  // Compact full node list (context, ~50 chars per node)
+  const allNodesList = skeletonData.nodes
+    .map(n => `  ${n.id} | "${n.label}" | ${n.category}`)
+    .join('\n');
+
+  // Nodes to enrich — include their links for context
+  const batchDetail = thisBatch.map(n => {
+    const links = skeletonData.links.filter(l => l.source === n.id || l.target === n.id);
+    const linkSummary = links.slice(0,4).map(l =>
+      `    ${l.relation}: ${l.source === n.id ? '→ '+l.target : l.source+' →'} (${l.label||''})`
+    ).join('\n');
+    return `  NODE: ${n.id} | "${n.label}" | prereqs: [${(n.prerequisites||[]).join(', ')}]\n${linkSummary}`;
+  }).join('\n\n');
+
+  const otherList = otherBatch.map(n => `  ${n.id}`).join(' · ');
+  const topicSlug = topic.toLowerCase().replace(/[^a-z0-9]+/g,'_').substring(0,25);
+
+  return `╔══════════════════════════════════════════════════════════════════════════════════╗
+║           NEURON — CONTENT ENRICHMENT  (Part ${batchNum + 1} of 3 · Batch ${batchNum} of 2)              ║
+╚══════════════════════════════════════════════════════════════════════════════════╝
+
+TOPIC:  ${topic}
+DEPTH:  ${depth}
+BATCH:  ${batchNum} of 2 — enriching ${thisBatch.length} of ${sorted.length} nodes
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CONTEXT — THE FULL MAP YOU PLANNED IN PART 1:
+
+All ${skeletonData.nodes.length} nodes (for cross-referencing — name them in your prose):
+${allNodesList}
+
+Nodes being enriched in the OTHER batch (do NOT include these in your output):
+${otherList}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+YOUR TASK: Write rich content for these ${thisBatch.length} nodes.
+
+NODES TO ENRICH (with their links for context):
+${batchDetail}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+HOW TO WRITE desc (1 sentence):
+  Mentor-style. Answer: "Why does THIS matter in the context of ${topic}?"
+  Create a MENTAL HOOK, not a dictionary definition.
+
+HOW TO WRITE info (${depth === 'researcher' ? '6-10+ paragraphs' : '4-6 paragraphs'}):
+  1. Explain what it is, why it matters — include an example or analogy
+  2. Reference SPECIFIC connected nodes by their label and explain WHY they connect
+     (you have the full node list above — use it)
+  3. Show how this node serves the bigger picture of "${topic}"
+  Write as an expert mentor. Reveal surprising connections. Continuous prose, no bullets.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+OUTPUT FORMAT — NCE (Neuron Content Enrichment):
+
+  Output ONLY valid JSON. No prose. No markdown fences. Start with { end with }
+
+  {
+    "_nce": "1",
+    "_id": "${topicSlug}_${depth}",
+    "batch": ${batchNum},
+    "E_cols": ["ni","desc","info","analogy"],
+    "E": [
+      ["node_id", "1-sentence desc", "full info paragraphs", "analogy string or null"],
+      ... one row per node in this batch ...
+    ]
+  }
+
+RULES:
+  E1. Include EXACTLY the ${thisBatch.length} nodes listed above — no more, no less
+  E2. Every ni must exactly match the node id from Part 1
+  E3. info must be non-empty — write full depth content per guidelines above
+  E4. Output ONLY the NCE JSON
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+NOW WRITE THE NCE FOR BATCH ${batchNum}: ${thisBatch.length} nodes, full ${depth} depth content.`;
+}
+
+// ══════════════════════════════════════════
+// SCHEMA VALIDATION
+// ══════════════════════════════════════════
+function parseNCF(raw) {
+  // Returns standard internal format expected by buildGraph() and validateSchema()
+  // Handles both NCF (_ncf field present) and legacy verbose JSON (no _ncf field)
+  const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
+  if (!data._ncf) return data; // Legacy format — pass through unchanged
+
+  const colIdx = (cols, key) => cols.indexOf(key);
+
+  // Expand nodes
+  const NC = data.N_cols;
+  const nodes = (data.N || []).map(row => ({
+    id:             row[colIdx(NC,'id')],
+    label:          row[colIdx(NC,'label')],
+    category:       row[colIdx(NC,'cat')],
+    hot:            row[colIdx(NC,'hot')] === 1 || row[colIdx(NC,'hot')] === true,
+    depth_level:    row[colIdx(NC,'dl')],
+    description:    row[colIdx(NC,'desc')] || '',
+    additionalInfo: row[colIdx(NC,'info')] || '',
+    prerequisites:  row[colIdx(NC,'prereq')] || [],
+    analogy:        row[colIdx(NC,'analogy')] || null,
+  }));
+
+  // Expand links
+  const LC = data.L_cols;
+  const links = (data.L || []).map(row => ({
+    source:   row[colIdx(LC,'src')],
+    target:   row[colIdx(LC,'tgt')],
+    relation: row[colIdx(LC,'rel')],
+    type:     row[colIdx(LC,'tp')],
+    weight:   row[colIdx(LC,'w')],
+    label:    row[colIdx(LC,'lbl')] || '',
+  }));
+
+  // Expand learning path
+  const LPC = data.LP_cols;
+  const learningPath = (data.LP || []).map(row => ({
+    nodeId:           row[colIdx(LPC,'ni')],
+    order:            row[colIdx(LPC,'o')],
+    phase:            row[colIdx(LPC,'ph')],
+    reason:           row[colIdx(LPC,'rs')],
+    estimatedMinutes: row[colIdx(LPC,'em')],
+    keyInsight:       row[colIdx(LPC,'ki')] || '',
+  }));
+
+  // Expand metadata
+  const m = data.meta || {};
+  const metadata = {
+    totalConcepts:          m.tc,
+    totalLinks:             m.tl,
+    centralNode:            m.central,
+    crossDomainInsights:    m.insights || [],
+    suggestedNextTopics:    m.next || [],
+    commonMisconceptions:   m.misconceptions || [],
+  };
+
+  return {
+    topic:        data.topic,
+    depth:        data.depth,
+    summary:      data.summary,
+    categories:   data.categories || [],
+    nodes,
+    links,
+    learningPath,
+    metadata,
+  };
+}
+
+function parseNCE(raw) {
+  const cleaned = raw.trim()
+    .replace(/^```(?:json)?\n?/,'').replace(/\n?```$/,'').trim();
+  const data = JSON.parse(cleaned);
+  if (!data._nce) throw new Error('Not a valid NCE object — missing _nce field');
+  const cols = data.E_cols || ['ni','desc','info','analogy'];
+  const ni = cols.indexOf('ni');
+  const di = cols.indexOf('desc');
+  const ii = cols.indexOf('info');
+  const ai = cols.indexOf('analogy');
+  const map = {};
+  (data.E || []).forEach(row => {
+    if (row[ni]) map[row[ni]] = {
+      description:    row[di] || '',
+      additionalInfo: row[ii] || '',
+      analogy:        row[ai] ?? null
+    };
+  });
+  return map;  // {nodeId: {description, additionalInfo, analogy}}
+}
+
+function mergeEnrichment(skeleton, ...enrichMaps) {
+  const merged = Object.assign({}, ...enrichMaps.filter(Boolean));
+  return {
+    ...skeleton,
+    nodes: skeleton.nodes.map(node => ({
+      ...node,
+      description:    merged[node.id]?.description    || node.description    || '',
+      additionalInfo: merged[node.id]?.additionalInfo || node.additionalInfo || '',
+      analogy:        merged[node.id]?.analogy        ?? node.analogy        ?? null,
+    }))
+  };
+}
+
+function validateSchema(data) {
+  const errors = [];
+
+  if (!data.topic) errors.push('Missing: topic');
+  if (!data.depth) errors.push('Missing: depth');
+  if (!data.summary) errors.push('Missing: summary');
+
+  if (!Array.isArray(data.categories) || data.categories.length < 2)
+    errors.push('categories: must be array with 2+ items');
+
+  if (!Array.isArray(data.nodes) || data.nodes.length < 5)
+    errors.push('nodes: must be array with 5+ items');
+
+  if (!Array.isArray(data.links) || data.links.length < 3)
+    errors.push('links: must be array with 3+ items');
+
+  if (!Array.isArray(data.learningPath) || data.learningPath.length < 1)
+    errors.push('learningPath: must be non-empty array');
+
+  if (errors.length) return { ok: false, errors };
+
+  const nodeIds = new Set(data.nodes.map(n => n.id));
+  const catIds = new Set(data.categories.map(c => c.id));
+
+  data.nodes.forEach((n, i) => {
+    if (!n.id || /\s/.test(n.id)) errors.push(`nodes[${i}]: id "${n.id}" has spaces`);
+    if (!n.label) errors.push(`nodes[${i}]: missing label`);
+    if (!catIds.has(n.category)) errors.push(`nodes[${i}] "${n.id}": category "${n.category}" not found`);
+    if (n.prerequisites) n.prerequisites.forEach(p => {
+      if (!nodeIds.has(p)) errors.push(`nodes[${i}] "${n.id}": prerequisite "${p}" not found`);
+    });
+  });
+
+  data.links.forEach((l, i) => {
+    if (!nodeIds.has(l.source)) errors.push(`links[${i}]: source "${l.source}" not found`);
+    if (!nodeIds.has(l.target)) errors.push(`links[${i}]: target "${l.target}" not found`);
+  });
+
+  data.learningPath.forEach((lp, i) => {
+    if (!nodeIds.has(lp.nodeId)) errors.push(`learningPath[${i}]: nodeId "${lp.nodeId}" not found`);
+  });
+
+  if (errors.length) return { ok: false, errors };
+  return { ok: true, errors: [] };
+}
+
+// ══════════════════════════════════════════
+// SCREEN 1: LANDING
+// ══════════════════════════════════════════
+document.querySelectorAll('.depth-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.depth-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    appState.depth = btn.dataset.depth;
+  });
+});
+
+document.getElementById('go-prompt').addEventListener('click', () => {
+  const topic = document.getElementById('topic-input').value.trim();
+  if (!topic) {
+    document.getElementById('topic-input').style.borderColor = 'rgba(255,107,107,0.5)';
+    setTimeout(() => document.getElementById('topic-input').style.borderColor = '', 1500);
+    return;
+  }
+  appState.topic = topic;
+   appState.fromJsonDirect = false;
+  goToPromptScreen();
+});
+
+document.getElementById('topic-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('go-prompt').click();
+});
+
+// Allow jumping straight to JSON paste screen for users who already have a map
+document.getElementById('go-json-direct').addEventListener('click', () => {
+  // Use a generic label; actual topic will come from the pasted JSON
+  appState.topic = 'Custom JSON map';
+  appState.fromJsonDirect = true;
+  goToPromptScreen();
+});
+
+// ══════════════════════════════════════════
+// SCREEN 2: PROMPT
+// ══════════════════════════════════════════
+function goToPromptScreen() {
+  document.getElementById('s-land').classList.add('hidden');
+  document.getElementById('s-prompt').classList.remove('hidden');
+
+  appState.useMultiPart = (appState.depth === 'researcher' && !appState.fromJsonDirect);
+  appState.skeletonData = null;
+  appState.enrichBatches = [null, null];
+  appState.data = null;
+
+  document.getElementById('pw-topic-name').textContent = `"${appState.topic}"`;
+  document.getElementById('val-msg').style.display = 'none';
+  document.getElementById('json-paste').value = '';
+  document.getElementById('launch-btn').disabled = true;
+
+  // Remove any existing multi-part container
+  document.getElementById('mp-container')?.remove();
+
+  const titleEl     = document.getElementById('pw-title');
+  const copySection = document.getElementById('copy-section');
+  const copyPill    = document.getElementById('pill-copy');
+  const pastePill   = document.getElementById('pill-paste');
+  const launchPill  = document.getElementById('pill-launch');
+  const pasteLabel  = document.getElementById('paste-section-label');
+  const stepPills   = document.querySelector('.step-pills');
+
+  // Reset pill states
+  [copyPill, pastePill, launchPill].forEach(p => {
+    p.classList.remove('active','done');
+  });
+
+  if (appState.useMultiPart) {
+    // Hide the single-paste UI entirely
+    titleEl.style.display = '';
+    if (stepPills) stepPills.style.display = 'none';
+    copySection.style.display = 'none';
+    // Hide all pw-section divs (single paste + schema)
+    document.querySelectorAll('.pw-section').forEach(el => el.style.display = 'none');
+    document.getElementById('launch-btn').style.display = 'none';
+    renderMultiPartUI();
+  } else {
+    // Show the single-paste UI (restore if previously hidden)
+    if (stepPills) stepPills.style.display = 'flex';
+    document.querySelectorAll('.pw-section').forEach(el => el.style.display = '');
+    document.getElementById('launch-btn').style.display = '';
+    copyPill.style.display = '';
+
+    if (appState.fromJsonDirect) {
+      titleEl.style.display = 'none';
+      copySection.style.display = 'none';
+      copyPill.style.display = 'none';
+      pastePill.classList.add('active');
+      pasteLabel.textContent = 'Paste the JSON output here';
+      document.getElementById('gen-prompt').textContent = '';
+    } else {
+      titleEl.style.display = '';
+      copySection.style.display = '';
+      copyPill.classList.add('active');
+      pasteLabel.textContent = 'Step 2 — Paste the JSON output here';
+      document.getElementById('gen-prompt').textContent =
+        buildPrompt(appState.topic, appState.depth);
+    }
+  }
+}
+
+function renderMultiPartUI() {
+  const wrap = document.querySelector('.prompt-wrap');
+  const container = document.createElement('div');
+  container.id = 'mp-container';
+  container.innerHTML = `
+    <div class="mp-row">
+      <div class="mp-slot active" id="mp-slot-1" style="flex:1;min-width:0;">
+        <div class="mp-slot-hdr">
+          <div class="mp-badge active" id="mp-badge-1">1</div>
+          <div class="mp-slot-title">Skeleton</div>
+          <div class="mp-slot-sub">Structure only · graph renders instantly after this</div>
+        </div>
+        <div class="prompt-box" id="mp-prompt-1" style="max-height:160px"></div>
+        <div class="copy-row" style="margin-top:10px">
+          <button class="btn-copy" id="mp-copy-1">⎘ Copy Prompt</button>
+          <div style="font-family:var(--mono);font-size:0.55rem;color:var(--muted);display:flex;align-items:center">
+            → paste AI response below
+          </div>
+        </div>
+        <textarea class="paste-area" id="mp-paste-1" style="margin-top:10px;min-height:80px"
+          placeholder="Paste skeleton NCF response here…"></textarea>
+        <div class="mp-status" id="mp-status-1"></div>
+      </div>
+
+      <div class="mp-slot locked" id="mp-slot-2" style="flex:1;min-width:0;">
+        <div class="mp-slot-hdr">
+          <div class="mp-badge pending" id="mp-badge-2">2</div>
+          <div class="mp-slot-title">Enrich — Batch A</div>
+          <div class="mp-slot-sub" id="mp-sub-2">Unlocks after Skeleton</div>
+        </div>
+        <div class="prompt-box" id="mp-prompt-2"
+          style="max-height:130px;font-size:0.58rem;color:var(--muted)">
+          Waiting for Skeleton…
+        </div>
+        <div class="copy-row" style="margin-top:10px">
+          <button class="btn-copy" id="mp-copy-2" disabled>⎘ Copy Prompt</button>
+        </div>
+        <textarea class="paste-area" id="mp-paste-2" style="margin-top:10px;min-height:80px"
+          placeholder="Paste NCE enrichment response here…" disabled></textarea>
+        <div class="mp-status" id="mp-status-2"></div>
+      </div>
+
+      <div class="mp-slot locked" id="mp-slot-3" style="flex:1;min-width:0;">
+        <div class="mp-slot-hdr">
+          <div class="mp-badge pending" id="mp-badge-3">3</div>
+          <div class="mp-slot-title">Enrich — Batch B</div>
+          <div class="mp-slot-sub" id="mp-sub-3">Unlocks after Batch A</div>
+        </div>
+        <div class="prompt-box" id="mp-prompt-3"
+          style="max-height:130px;font-size:0.58rem;color:var(--muted)">
+          Waiting for Batch A…
+        </div>
+        <div class="copy-row" style="margin-top:10px">
+          <button class="btn-copy" id="mp-copy-3" disabled>⎘ Copy Prompt</button>
+        </div>
+        <textarea class="paste-area" id="mp-paste-3" style="margin-top:10px;min-height:80px"
+          placeholder="Paste NCE enrichment response here…" disabled></textarea>
+        <div class="mp-status" id="mp-status-3"></div>
+      </div>
+    </div>
+
+    <div class="mp-launch-hint" id="mp-launch-hint">
+      Graph renders after Skeleton · Popups fill in after Batches A &amp; B
+    </div>
+    <button class="btn-launch" id="mp-launch-btn" disabled>
+      ⬡ Visualize Knowledge Graph →
+    </button>
+  `;
+
+  // Insert into .prompt-wrap (before the hidden launch btn so layout is clean)
+  wrap.appendChild(container);
+
+  // Set skeleton prompt
+  document.getElementById('mp-prompt-1').textContent =
+    buildSkeletonPrompt(appState.topic, appState.depth);
+
+  // Wire copy buttons
+  [1,2,3].forEach(slot => {
+    const btn = document.getElementById(`mp-copy-${slot}`);
+    btn.addEventListener('click', () => {
+      const txt = document.getElementById(`mp-prompt-${slot}`).textContent;
+      if (!txt || txt.startsWith('Waiting')) return;
+      if (navigator.clipboard?.writeText) {
+        navigator.clipboard.writeText(txt).then(() => {
+          btn.textContent = '✓ Copied!';
+          btn.classList.add('copied');
+          setTimeout(() => { btn.textContent = '⎘ Copy Prompt'; btn.classList.remove('copied'); }, 2500);
+        });
+      } else {
+        const r = document.createRange();
+        r.selectNodeContents(document.getElementById(`mp-prompt-${slot}`));
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(r);
+        btn.textContent = 'Select + Ctrl+C';
+        setTimeout(() => { btn.textContent = '⎘ Copy Prompt'; }, 3000);
+      }
+    });
+  });
+
+  // Wire paste handlers
+  [1,2,3].forEach(slot => {
+    let timer;
+    const area = document.getElementById(`mp-paste-${slot}`);
+    if (!area) return;
+    area.addEventListener('input', function() {
+      clearTimeout(timer);
+      timer = setTimeout(() => handleMpPaste(slot, this.value), 600);
+    });
+  });
+
+  // Wire launch button
+  document.getElementById('mp-launch-btn').addEventListener('click', () => {
+    if (!appState.skeletonData) return;
+    const enrichMaps = appState.enrichBatches.filter(Boolean);
+    appState.data = enrichMaps.length
+      ? mergeEnrichment(appState.skeletonData, ...enrichMaps)
+      : appState.skeletonData;
+    document.getElementById('s-prompt').classList.add('hidden');
+    document.getElementById('s-graph').classList.remove('hidden');
+    buildGraph(appState.data);
+  });
+}
+
+function handleMpPaste(slot, raw) {
+  const statusEl = document.getElementById(`mp-status-${slot}`);
+  const txt = raw.trim().replace(/^```(?:json)?\n?/,'').replace(/\n?```$/,'').trim();
+  if (!txt) { statusEl.className = 'mp-status'; statusEl.textContent = ''; return; }
+
+  if (slot === 1) {
+    // Parse as NCF skeleton
+    let parsed, expanded;
+    try {
+      parsed = JSON.parse(txt);
+      expanded = parseNCF(parsed);
+    } catch(e) {
+      statusEl.className = 'mp-status err';
+      statusEl.textContent = `JSON error: ${e.message}`;
+      return;
+    }
+    const result = validateSchema(expanded);
+    if (!result.ok) {
+      statusEl.className = 'mp-status err';
+      statusEl.textContent = result.errors.slice(0,2).join(' · ');
+      return;
+    }
+
+    appState.skeletonData = expanded;
+    statusEl.className = 'mp-status ok';
+    statusEl.textContent =
+      `✓ Skeleton: ${expanded.nodes.length} nodes · ${expanded.links.length} links · Graph ready`;
+
+    // Mark slot 1 done
+    const slotEl = document.getElementById('mp-slot-1');
+    if (slotEl) slotEl.classList.replace('active','complete');
+    const b1 = document.getElementById('mp-badge-1');
+    if (b1) { b1.className = 'mp-badge done'; b1.textContent = '✓'; }
+
+    // Generate enrich prompts
+    document.getElementById('mp-prompt-2').textContent =
+      buildEnrichPrompt(appState.topic, appState.depth, expanded, 1);
+    document.getElementById('mp-prompt-3').textContent =
+      buildEnrichPrompt(appState.topic, appState.depth, expanded, 2);
+
+    // Unlock slot 2
+    unlockMpSlot(2);
+
+    // Enable launch with skeleton-only label
+    const lbtn = document.getElementById('mp-launch-btn');
+    lbtn.disabled = false;
+    lbtn.textContent = '⬡ Visualize Skeleton →';
+    document.getElementById('mp-launch-hint').textContent =
+      `${expanded.nodes.length} nodes loaded — add Batches A & B for full popup content`;
+
+  } else {
+    // Parse as NCE enrichment
+    let nceMap;
+    try { nceMap = parseNCE(txt); }
+    catch(e) {
+      statusEl.className = 'mp-status err';
+      statusEl.textContent = `NCE error: ${e.message}`;
+      return;
+    }
+
+    const batchIdx = slot - 2; // slot 2 → index 0, slot 3 → index 1
+    appState.enrichBatches[batchIdx] = nceMap;
+    const count = Object.keys(nceMap).length;
+
+    statusEl.className = 'mp-status ok';
+    statusEl.textContent = `✓ ${count} nodes enriched`;
+
+    // Mark done
+    const slotEl = document.getElementById(`mp-slot-${slot}`);
+    if (slotEl) slotEl.classList.replace('active','complete');
+    const badge = document.getElementById(`mp-badge-${slot}`);
+    if (badge) { badge.className = 'mp-badge done'; badge.textContent = '✓'; }
+
+    // Unlock next slot
+    if (slot === 2) unlockMpSlot(3);
+
+    // Update launch button
+    const totalEnriched = appState.enrichBatches.filter(Boolean)
+      .reduce((sum, m) => sum + Object.keys(m).length, 0);
+    const totalNodes = appState.skeletonData?.nodes.length || 0;
+    const lbtn = document.getElementById('mp-launch-btn');
+    if (totalEnriched >= totalNodes && totalNodes > 0) {
+      lbtn.textContent = '⬡ Visualize Full Graph →';
+      document.getElementById('mp-launch-hint').textContent =
+        'All nodes enriched — full popup content ready';
+    } else {
+      lbtn.textContent = `⬡ Visualize (${totalEnriched}/${totalNodes} enriched) →`;
+    }
+
+    // Live-update data if graph already open
+    if (!document.getElementById('s-graph').classList.contains('hidden')
+        && appState.skeletonData) {
+      appState.data = mergeEnrichment(
+        appState.skeletonData, ...appState.enrichBatches.filter(Boolean)
+      );
+      // Popup reads from appState.data on next open — no re-render needed
+    }
+  }
+}
+
+function unlockMpSlot(slot) {
+  const el = document.getElementById(`mp-slot-${slot}`);
+  if (!el) return;
+  el.classList.remove('locked'); el.classList.add('active');
+  const ta = document.getElementById(`mp-paste-${slot}`);
+  const btn = document.getElementById(`mp-copy-${slot}`);
+  if (ta) ta.disabled = false;
+  if (btn) btn.disabled = false;
+  const badge = document.getElementById(`mp-badge-${slot}`);
+  if (badge) { badge.className = 'mp-badge active'; }
+}
+
+document.getElementById('back-land').addEventListener('click', () => {
+  document.getElementById('s-prompt').classList.add('hidden');
+  document.getElementById('s-land').classList.remove('hidden');
+});
+
+document.getElementById('copy-btn').addEventListener('click', () => {
+  const txt = document.getElementById('gen-prompt').textContent;
+  const btn = document.getElementById('copy-btn');
+
+  if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+    navigator.clipboard.writeText(txt).then(() => {
+      btn.textContent = '✓ Copied!';
+      btn.classList.add('copied');
+      document.getElementById('pill-paste').classList.add('active');
+      setTimeout(() => { btn.textContent = '⎘ Copy Prompt'; btn.classList.remove('copied'); }, 2500);
+    }).catch(() => {
+      btn.textContent = 'Copy failed';
+      setTimeout(() => { btn.textContent = '⎘ Copy Prompt'; }, 2000);
+    });
+  } else {
+    // Fallback: select text in the prompt box for manual copy
+    const range = document.createRange();
+    const promptEl = document.getElementById('gen-prompt');
+    range.selectNodeContents(promptEl);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    btn.textContent = 'Select & press Ctrl+C';
+    setTimeout(() => { btn.textContent = '⎘ Copy Prompt'; }, 3000);
+  }
+});
+
+document.getElementById('schema-toggle').addEventListener('click', () => {
+  const box = document.getElementById('schema-box');
+  const tog = document.getElementById('schema-toggle');
+  const open = box.style.display === 'block';
+  box.style.display = open ? 'none' : 'block';
+  tog.textContent = (open ? '▸' : '▾') + ' View expected JSON schema';
+});
+
+let validateTimeout;
+document.getElementById('json-paste').addEventListener('input', function() {
+  clearTimeout(validateTimeout);
+  validateTimeout = setTimeout(() => validatePaste(this.value), 500);
+});
+
+function showErrorWithCopy(container, fullErrorText) {
+  container.innerHTML = '<p class="val-err-calm">No need to worry — LLMs can make mistakes. Copy the error below and paste it to your LLM; it will help fix the schema.</p><pre class="val-err-pre" id="val-msg-full-error"></pre><div class="val-err-copy-row"><button type="button" class="btn-copy val-err-copy-btn">⎘ Copy error</button></div>';
+  const pre = document.getElementById('val-msg-full-error');
+  const copyBtn = container.querySelector('.val-err-copy-btn');
+  if (pre) pre.textContent = fullErrorText;
+  if (copyBtn) {
+    copyBtn.addEventListener('click', () => {
+      const text = pre ? pre.textContent : fullErrorText;
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        navigator.clipboard.writeText(text).then(() => {
+          copyBtn.textContent = '✓ Copied';
+          copyBtn.classList.add('copied');
+          setTimeout(() => { copyBtn.textContent = '⎘ Copy error'; copyBtn.classList.remove('copied'); }, 2500);
+        }).catch(() => { copyBtn.textContent = 'Copy failed'; setTimeout(() => { copyBtn.textContent = '⎘ Copy error'; }, 2000); });
+      } else {
+        const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); copyBtn.textContent = '✓ Copied'; copyBtn.classList.add('copied'); setTimeout(() => { copyBtn.textContent = '⎘ Copy error'; copyBtn.classList.remove('copied'); }, 2500); } catch (err) { copyBtn.textContent = 'Copy failed'; }
+        document.body.removeChild(ta);
+      }
+    });
+  }
+}
+
+function validatePaste(raw) {
+  const vm = document.getElementById('val-msg');
+  const btn = document.getElementById('launch-btn');
+  vm.style.display = 'none';
+  btn.disabled = true;
+
+  const txt = raw.trim();
+  if (!txt) return;
+
+  // Try stripping markdown fences
+  const cleaned = txt.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim();
+
+  let parsed;
+  try { parsed = JSON.parse(cleaned); }
+  catch(e) {
+    vm.className = 'err'; vm.style.display = 'block';
+    const fullError = `Invalid JSON: ${e.message}`;
+    showErrorWithCopy(vm, fullError);
+    return;
+  }
+
+  const expanded = parseNCF(parsed);
+  const result = validateSchema(expanded);
+  if (!result.ok) {
+    vm.className = 'err'; vm.style.display = 'block';
+    const fullError = `Schema errors:\n${result.errors.join('\n')}`;
+    showErrorWithCopy(vm, fullError);
+    return;
+  }
+
+  appState.data = expanded;
+  vm.className = 'ok'; vm.style.display = 'block';
+  vm.textContent = `✓ Valid! ${expanded.nodes.length} nodes · ${expanded.links.length} links · ${expanded.learningPath.length} learning steps`;
+  btn.disabled = false;
+  document.getElementById('pill-launch').classList.add('active');
+}
+
+document.getElementById('launch-btn').addEventListener('click', () => {
+  if (!appState.data) return;
+  document.getElementById('s-prompt').classList.add('hidden');
+  document.getElementById('s-graph').classList.remove('hidden');
+  buildGraph(appState.data);
+});
+
+// ══════════════════════════════════════════
+// GRAPH ENGINE
+// ══════════════════════════════════════════
+let simulation, zoomBehavior, gSel;
+
+function buildGraph(data) {
+  const W = innerWidth, H = innerHeight;
+
+  let activeNode = null;
+  const tip = document.getElementById('ntip');
+
+  // Topbar
+  document.getElementById('tb-topic').textContent = data.topic;
+  document.getElementById('tb-depth').textContent = data.depth.toUpperCase();
+  document.getElementById('tb-stats').textContent = `${data.nodes.length} nodes · ${data.links.length} synapses`;
+
+  // Color map
+  const catColor = Object.fromEntries(data.categories.map(c => [c.id, c.color]));
+  const catIcon  = Object.fromEntries(data.categories.map(c => [c.id, c.icon]));
+  const nodeMap  = Object.fromEntries(data.nodes.map(n => [n.id, n]));
+
+  // Build D3 nodes/links
+  const rootNode = { id:'__root__', label: data.topic, type:'root', color:'#cceeff' };
+  const catNodes = data.categories.map(c => ({...c, type:'category', color:c.color}));
+  const conceptNodes = data.nodes.map(n => ({
+    ...n, type:'concept', color: catColor[n.category] || '#aaa'
+  }));
+  const allNodes = [rootNode, ...catNodes, ...conceptNodes];
+  const nById = Object.fromEntries(allNodes.map(n => [n.id, n]));
+
+  const rootLinks = data.categories.map(c => ({source:'__root__', target:c.id, kind:'h'}));
+  const catLinks  = data.nodes.map(n => ({source:n.category, target:n.id, kind:'h'}));
+  const dataLinks = data.links.map(l => ({...l, kind: l.type==='hierarchical'?'h':'x'}));
+  const allLinks  = [...rootLinks, ...catLinks, ...dataLinks];
+
+  // Clear old graph
+  const svgEl = document.getElementById('graph-svg');
+  d3.select(svgEl).selectAll('*').remove();
+  svgEl.setAttribute('width', W); svgEl.setAttribute('height', H);
+
+  const svg = d3.select(svgEl);
+  const defs = svg.append('defs');
+
+  // Glow filters
+  data.categories.forEach((c,i) => {
+    const f = defs.append('filter').attr('id',`gf${i}`)
+      .attr('x','-80%').attr('y','-80%').attr('width','260%').attr('height','260%');
+    f.append('feGaussianBlur').attr('stdDeviation','5').attr('result','blur');
+    const m = f.append('feMerge');
+    m.append('feMergeNode').attr('in','blur');
+    m.append('feMergeNode').attr('in','SourceGraphic');
+  });
+  const rf = defs.append('filter').attr('id','gfroot')
+    .attr('x','-100%').attr('y','-100%').attr('width','300%').attr('height','300%');
+  rf.append('feGaussianBlur').attr('stdDeviation','12').attr('result','blur');
+  const rm = rf.append('feMerge');
+  rm.append('feMergeNode').attr('in','blur');
+  rm.append('feMergeNode').attr('in','SourceGraphic');
+
+  const catFilterIdx = Object.fromEntries(data.categories.map((c,i) => [c.id, i]));
+
+  gSel = svg.append('g');
+  zoomBehavior = d3.zoom().scaleExtent([0.08, 4])
+    .on('zoom', e => gSel.attr('transform', e.transform));
+  svg.call(zoomBehavior);
+
+  const lG = gSel.append('g');
+  const nG = gSel.append('g');
+
+  // Simulation
+  simulation = d3.forceSimulation(allNodes)
+    .force('link', d3.forceLink(allLinks).id(d=>d.id)
+      .distance(d => {
+        if (d.kind==='x') return 180;
+        const st = d.source.type||'concept';
+        return st==='root' ? 220 : 80;
+      })
+      .strength(d => {
+        if (d.kind==='x') return 0.01;
+        const st = d.source.type||'concept';
+        return st==='root' ? 0.25 : 0.5;
+      })
+    )
+    .force('charge', d3.forceManyBody().strength(d => {
+      if (d.type==='root') return -2800;
+      if (d.type==='category') return -600;
+      return -120;
+    }))
+    .force('center', d3.forceCenter(W/2, H/2).strength(0.05))
+    .force('collide', d3.forceCollide().radius(d =>
+      d.type==='root'?60 : d.type==='category'?50 : 35
+    ));
+
+  // Links
+  const LE = lG.selectAll('line').data(allLinks).join('line')
+    .attr('class', d => `link${d.kind==='x'?' cross':''}`)
+    .attr('stroke', d => {
+      const t = nById[typeof d.target==='object'?d.target.id:d.target];
+      return t?.color || '#888';
+    });
+
+  // Nodes
+  const NE = nG.selectAll('g.node').data(allNodes).join('g')
+    .attr('class','node')
+    .call(d3.drag()
+      .on('start',(e,d)=>{ if(!e.active) simulation.alphaTarget(0.3).restart(); d.fx=d.x;d.fy=d.y; })
+      .on('drag',(e,d)=>{ d.fx=e.x;d.fy=e.y; })
+      .on('end',(e,d)=>{ if(!e.active) simulation.alphaTarget(0); d.fx=null;d.fy=null; })
+    );
+
+  // Pulse rings on hot nodes
+  NE.filter(d=>d.hot).append('circle')
+    .attr('fill','none').attr('stroke',d=>d.color)
+    .attr('stroke-width',0.7).attr('r',8).attr('opacity',0)
+    .each(function(d){
+      const el=d3.select(this); const delay=Math.random()*4000;
+      function pulse(){el.attr('r',8).attr('opacity',0.55)
+        .transition().duration(2200).attr('r',28).attr('opacity',0).on('end',pulse);}
+      setTimeout(pulse,delay);
+    });
+
+  // Main circles
+  NE.append('circle')
+    .attr('r', d => d.type==='root'?30:d.type==='category'?17:7)
+    .attr('fill', d => d.type==='root'?'rgba(200,240,255,0.06)':d.color+'14')
+    .attr('stroke', d=>d.color).attr('stroke-width',d=>d.type==='root'?2:d.type==='category'?1.5:1)
+    .attr('filter', d => {
+      if(d.type==='root') return 'url(#gfroot)';
+      const ci = d.type==='category' ? catFilterIdx[d.id] : catFilterIdx[d.category];
+      return ci!=null?`url(#gf${ci})`:null;
+    });
+
+  // Inner dot (concepts)
+  NE.filter(d=>d.type==='concept').append('circle')
+    .attr('r',2.2).attr('fill',d=>d.color).attr('opacity',0.85);
+
+  // Category icon
+  NE.filter(d=>d.type==='category').append('text')
+    .attr('text-anchor','middle').attr('dy','0.35em')
+    .attr('font-size','10px').text(d=>d.icon||'○');
+
+  // Category label
+  NE.filter(d=>d.type==='category').append('text')
+    .attr('text-anchor','middle').attr('dy','30px')
+    .attr('font-size','7.5px').attr('font-weight','700')
+    .attr('letter-spacing','0.7px').attr('fill',d=>d.color).attr('opacity',0.8)
+    .text(d=>d.label.toUpperCase());
+
+  // Root text
+  NE.filter(d=>d.type==='root').append('text')
+    .attr('text-anchor','middle').attr('dy','-3px')
+    .attr('font-size','6.5px').attr('font-weight','800')
+    .attr('fill','#cce8f4').attr('letter-spacing','1px')
+    .text(d => d.label.length > 12 ? d.label.substring(0,10)+'…' : d.label);
+
+  // Concept label
+  NE.filter(d=>d.type==='concept').append('text')
+    .attr('text-anchor','middle').attr('dy','-12px')
+    .attr('font-size','7px').attr('fill',d=>d.color).attr('opacity',0.6)
+    .text(d=>d.label);
+
+  // Tick
+  simulation.on('tick',()=>{
+    LE.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y)
+      .attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+    NE.attr('transform',d=>`translate(${d.x},${d.y})`);
+  });
+
+  // ── HOVER TOOLTIP ──
+  NE.on('mouseover', (e, d) => {
+    if (d.type==='root') return;
+    const cat = data.categories.find(c=>c.id===(d.type==='category'?d.id:d.category));
+    document.getElementById('nt-cat').textContent = (cat?.label||'').toUpperCase();
+    document.getElementById('nt-cat').style.color = d.color;
+    document.getElementById('nt-name').textContent = d.label;
+    document.getElementById('nt-name').style.color = d.color;
+    document.getElementById('nt-desc').textContent = d.description || 'A key concept in this domain.';
+    const hotEl = document.getElementById('nt-hot');
+    hotEl.style.display = d.hot ? 'inline-flex' : 'none';
+    const preEl = document.getElementById('nt-prereq');
+    const preTags = document.getElementById('nt-pre-tags');
+    const prereqs = d.prerequisites?.filter(p=>p) || [];
+    if (prereqs.length) {
+      preTags.innerHTML = prereqs.map(p => {
+        const pn = nodeMap[p];
+        return `<span class="nt-ptag">${pn?.label||p}</span>`;
+      }).join('');
+      preEl.style.display = 'block';
+    } else { preEl.style.display = 'none'; }
+
+    tip.classList.add('show');
+    moveTip(e);
+  })
+  .on('mousemove', moveTip)
+  .on('mouseout', () => tip.classList.remove('show'));
+
+  function moveTip(e) {
+    let x = e.clientX + 16, y = e.clientY - 10;
+    if (x + 240 > innerWidth) x = e.clientX - 250;
+    if (y + 200 > innerHeight) y = e.clientY - 210;
+    tip.style.left = x+'px'; tip.style.top = y+'px';
+  }
+
+  // ── NODE POPUP ──
+  const popupOverlay = document.getElementById('node-popup-overlay');
+  const popupTitle = document.getElementById('node-popup-title');
+  const popupCat = document.getElementById('node-popup-cat');
+  const popupDesc = document.getElementById('node-popup-desc');
+  const popupPrereq = document.getElementById('node-popup-prereq');
+  const popupTags = document.getElementById('node-popup-tags');
+  const popupInfo = document.getElementById('node-popup-info');
+  const popupBody = document.getElementById('node-popup-body');
+  const popupBox = document.getElementById('node-popup');
+
+  // Allow scrolling inside the popup without zooming/panning the graph
+  const swallowWheel = (e) => {
+    e.stopPropagation();
+  };
+  [popupOverlay, popupBox, popupBody].forEach(el => {
+    if (el) el.addEventListener('wheel', swallowWheel);
+  });
+
+  function openNodePopup(d) {
+    const cat = data.categories.find(c => c.id === (d.type === 'category' ? d.id : d.category));
+    popupTitle.textContent = d.label;
+    popupTitle.style.color = d.color;
+    popupCat.textContent = (cat?.label || '').toUpperCase();
+    popupCat.style.color = d.color;
+    popupDesc.textContent = d.description || '';
+
+    if (d.type === 'concept') {
+      const prereqs = d.prerequisites?.filter(Boolean) || [];
+      if (prereqs.length) {
+        popupTags.innerHTML = prereqs.map(pid => {
+          const pn = nodeMap[pid];
+          return `<span class="node-popup-tag">${pn?.label || pid}</span>`;
+        }).join('');
+        popupPrereq.style.display = 'block';
+      } else {
+        popupPrereq.style.display = 'none';
+      }
+      // Always read live data so enrichment arriving post-render takes effect
+      const liveNode = appState.data?.nodes?.find(n => n.id === d.id);
+      const extra = ((liveNode?.additionalInfo || d.additionalInfo) || '').trim();
+      popupInfo.textContent = extra || 'No additional info for this concept. Use a map generated with the updated prompt to see extended explanations here.';
+    } else {
+      popupPrereq.style.display = 'none';
+      const inCategory = conceptNodes.filter(c => c.category === d.id).map(c => c.label);
+      popupInfo.textContent = inCategory.length
+        ? `Concepts in this domain: ${inCategory.join(', ')}.`
+        : (d.description || '');
+    }
+    popupOverlay.classList.add('show');
+  }
+
+  function closeNodePopup() {
+    popupOverlay.classList.remove('show');
+  }
+
+  document.getElementById('node-popup-close').addEventListener('click', closeNodePopup);
+  popupOverlay.addEventListener('click', (e) => { if (e.target === popupOverlay) closeNodePopup(); });
+
+  function applyFocus(d) {
+    activeNode = d.id;
+    const conn = new Set([d.id]);
+    allLinks.forEach(l => {
+      const s=typeof l.source==='object'?l.source.id:l.source;
+      const t=typeof l.target==='object'?l.target.id:l.target;
+      if(s===d.id) conn.add(t);
+      if(t===d.id) conn.add(s);
+    });
+    if(d.type==='concept'&&d.category) conn.add(d.category);
+    if(d.type==='category') conceptNodes.filter(c=>c.category===d.id).forEach(c=>conn.add(c.id));
+    NE.classed('dim', n => !conn.has(n.id));
+    LE.classed('hi', l => {
+      const s=typeof l.source==='object'?l.source.id:l.source;
+      const t=typeof l.target==='object'?l.target.id:l.target;
+      return s===d.id||t===d.id;
+    }).classed('dim', l => {
+      const s=typeof l.source==='object'?l.source.id:l.source;
+      const t=typeof l.target==='object'?l.target.id:l.target;
+      return !(s===d.id||t===d.id);
+    });
+    highlightLpStep(d.id);
+  }
+
+  // ── CLICK: first click = focus, second click = open details ──
+  NE.on('click', (e, d) => {
+    e.stopPropagation();
+    if (d.type === 'root') return;
+    if (activeNode === d.id) {
+      openNodePopup(d);
+      return;
+    }
+    applyFocus(d);
+  });
+
+  // ── RIGHT-CLICK: open details directly (and focus so graph matches) ──
+  NE.on('contextmenu', (e, d) => {
+    e.preventDefault();
+    if (d.type === 'root') return;
+    if (activeNode !== d.id) applyFocus(d);
+    openNodePopup(d);
+  });
+
+  svg.on('click', clearFocus);
+
+  function clearFocus(){
+    activeNode=null;
+    NE.classed('dim',false).classed('hi',false);
+    LE.classed('hi',false).classed('dim',false);
+    document.querySelectorAll('.lp-step').forEach(el=>el.classList.remove('active'));
+    tip.classList.remove('show');
+    closeNodePopup();
+  }
+
+  // ── LEGEND ──
+  const legEl = document.getElementById('leg-items');
+  legEl.innerHTML = '';
+  data.categories.forEach(cat => {
+    const item = document.createElement('div');
+    item.className='leg-item';
+    item.innerHTML=`<div class="leg-dot" style="background:${cat.color};box-shadow:0 0 4px ${cat.color}66"></div><span class="leg-lbl">${cat.icon||''} ${cat.label}</span>`;
+    item.addEventListener('click',()=>{
+      const members=new Set([cat.id,'__root__']);
+      conceptNodes.filter(c=>c.category===cat.id).forEach(c=>members.add(c.id));
+      NE.classed('dim',n=>!members.has(n.id)).classed('hi',n=>members.has(n.id)&&n.type!=='root');
+      LE.classed('dim',l=>{
+        const s=typeof l.source==='object'?l.source.id:l.source;
+        const t=typeof l.target==='object'?l.target.id:l.target;
+        return !(members.has(s)||members.has(t));
+      }).classed('hi',false);
+      document.querySelectorAll('.leg-item').forEach(el=>el.classList.remove('active'));
+      item.classList.add('active');
+    });
+    legEl.appendChild(item);
+  });
+
+  // ── SEARCH ──
+  document.getElementById('search').addEventListener('input', function(){
+    const q=this.value.toLowerCase().trim();
+    if(!q){ clearFocus(); return; }
+    const hits=new Set();
+    allNodes.forEach(n=>{ if(n.label.toLowerCase().includes(q)) hits.add(n.id); });
+    const nearby=new Set(hits);
+    allLinks.forEach(l=>{
+      const s=typeof l.source==='object'?l.source.id:l.source;
+      const t=typeof l.target==='object'?l.target.id:l.target;
+      if(hits.has(s)) nearby.add(t);
+      if(hits.has(t)) nearby.add(s);
+    });
+    NE.classed('dim',n=>!nearby.has(n.id)).classed('hi',n=>hits.has(n.id));
+    LE.classed('hi',l=>{
+      const s=typeof l.source==='object'?l.source.id:l.source;
+      const t=typeof l.target==='object'?l.target.id:l.target;
+      return hits.has(s)||hits.has(t);
+    }).classed('dim',l=>{
+      const s=typeof l.source==='object'?l.source.id:l.source;
+      const t=typeof l.target==='object'?l.target.id:l.target;
+      return !nearby.has(s)&&!nearby.has(t);
+    });
+  });
+
+  // ── ZOOM ──
+  function fit(){
+    svg.attr('width',innerWidth).attr('height',innerHeight);
+    svg.transition().duration(700).call(zoomBehavior.transform,
+      d3.zoomIdentity.translate(innerWidth/2,innerHeight/2).scale(0.6).translate(-W/2,-H/2));
+  }
+  document.getElementById('zin').onclick=()=>svg.transition().call(zoomBehavior.scaleBy,1.35);
+  document.getElementById('zout').onclick=()=>svg.transition().call(zoomBehavior.scaleBy,0.74);
+  document.getElementById('zfit').onclick=fit;
+  setTimeout(fit,300);
+
+  // ── FLY TO NODE (for learning path) ──
+  function flyToNode(nodeId) {
+    const node = allNodes.find(n => n.id === nodeId);
+    if (!node || node.x == null) return;
+    const k = 1.4;
+    const tx = innerWidth / 2 - node.x * k;
+    const ty = innerHeight / 2 - node.y * k;
+    svg.transition().duration(700).ease(d3.easeCubicInOut)
+      .call(zoomBehavior.transform, d3.zoomIdentity.translate(tx, ty).scale(k));
+  }
+
+  // ── LEARNING PATH ──
+  buildLearningPath(data, nodeMap, catColor, (nodeId) => {
+    flyToNode(nodeId);
+    highlightLpStep(nodeId);
+  });
+
+  window.addEventListener('resize',()=>{
+    svg.attr('width',innerWidth).attr('height',innerHeight);
+    simulation.force('center',d3.forceCenter(innerWidth/2,innerHeight/2));
+    simulation.alpha(0.1).restart();
+  });
+}
+
+// ══════════════════════════════════════════
+// LEARNING PATH
+// ══════════════════════════════════════════
+function buildLearningPath(data, nodeMap, catColor, onGoToNode) {
+  const stepsEl = document.getElementById('lp-steps');
+  const introEl = document.getElementById('lp-intro');
+  stepsEl.innerHTML = '';
+  appState.completedSteps.clear();
+
+  introEl.textContent = data.summary || `A structured path through ${data.topic}. Complete steps in order for the best learning experience.`;
+
+  const sorted = [...data.learningPath].sort((a,b)=>a.order-b.order);
+
+  sorted.forEach((step, idx) => {
+    const node = nodeMap[step.nodeId];
+    if (!node) return;
+    const color = catColor[node.category] || '#aaa';
+
+    const el = document.createElement('div');
+    el.className = 'lp-step';
+    el.id = `lps-${step.nodeId}`;
+    el.innerHTML = `
+      <div class="lp-num" style="border-color:${color};color:${color}" title="Click to mark done">${step.order}</div>
+      <div class="lp-body">
+        <div class="lp-name" style="color:${color}">${node.label}</div>
+        <div class="lp-why">${step.reason || 'Core concept for this topic.'}</div>
+        <div class="lp-time">~${step.estimatedMinutes||10} min</div>
+      </div>`;
+
+    el.addEventListener('click', (e) => {
+      if (e.target.closest('.lp-num')) {
+        e.stopPropagation();
+        el.classList.toggle('done');
+        if (el.classList.contains('done')) {
+          appState.completedSteps.add(step.nodeId);
+        } else {
+          appState.completedSteps.delete(step.nodeId);
+        }
+        updateProgress(sorted.length);
+        return;
+      }
+      if (typeof onGoToNode === 'function') {
+        onGoToNode(step.nodeId);
+      }
+    });
+
+    stepsEl.appendChild(el);
+  });
+
+  updateProgress(sorted.length);
+}
+
+function updateProgress(total) {
+  const done = appState.completedSteps.size;
+  const pct = total ? Math.round(done/total*100) : 0;
+  const pctEl = document.getElementById('prog-pct');
+  if (pctEl) pctEl.textContent = pct + '%';
+  document.getElementById('prog-lbl').textContent = `${done} / ${total} completed`;
+  document.getElementById('prog-fill').style.width = pct + '%';
+
+  var footerProg = document.getElementById('footer-progress');
+  var footerFill = document.getElementById('footer-prog-fill');
+  var footerPct = document.getElementById('footer-prog-pct');
+  if (footerProg && footerFill && footerPct) {
+    if (total > 0) {
+      footerProg.classList.remove('hidden');
+      footerFill.style.width = pct + '%';
+      footerPct.textContent = pct + '%';
+    } else {
+      footerProg.classList.add('hidden');
+    }
+  }
+}
+
+function highlightLpStep(nodeId) {
+  document.querySelectorAll('.lp-step').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById(`lps-${nodeId}`);
+  if (el) {
+    el.classList.add('active');
+    if (document.getElementById('lp-panel').classList.contains('open')) {
+      el.scrollIntoView({ behavior:'smooth', block:'nearest' });
+    }
+  }
+}
+
+// ── LP PANEL TOGGLE ──
+document.getElementById('lp-toggle').addEventListener('click', () => {
+  const panel = document.getElementById('lp-panel');
+  const btn = document.getElementById('lp-toggle');
+  panel.classList.toggle('open');
+  btn.classList.toggle('on');
+});
+document.getElementById('lp-close').addEventListener('click', () => {
+  document.getElementById('lp-panel').classList.remove('open');
+  document.getElementById('lp-toggle').classList.remove('on');
+});
+
+// ── GRAPH BACK ──
+document.getElementById('graph-back').addEventListener('click', () => {
+  if (simulation) simulation.stop();
+  document.getElementById('lp-panel').classList.remove('open');
+  document.getElementById('s-graph').classList.add('hidden');
+
+  // For multi-part researcher flows, return to the prompt "control room"
+  if (appState.useMultiPart) {
+    document.getElementById('s-prompt').classList.remove('hidden');
+  } else {
+    // For single-paste flows, behave as "New Map"
+    appState.skeletonData = null;
+    appState.enrichBatches = [null, null];
+    appState.useMultiPart = false;
+    document.getElementById('s-land').classList.remove('hidden');
+    document.getElementById('topic-input').value = '';
+  }
+});
+
+// ══════════════════════════════════════════
+// DEMO DATA (load without pasting)
+// ══════════════════════════════════════════
+// Uncomment to test without LLM:
+// window.addEventListener('load', () => { ... });
+</script>
+</body>
+</html>
