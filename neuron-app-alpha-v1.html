@@ -254,37 +254,35 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);width:100vw;
   margin:2px 2px 0 0;}
 .nt-hint{font-family:var(--mono);font-size:0.5rem;color:var(--muted);margin-top:8px;
   padding-top:8px;border-top:1px solid var(--border);}
-
-/* NODE POPUP (additional info) */
-#node-popup-overlay{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.6);
-  backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;
-  padding:24px;box-sizing:border-box;}
-#node-popup-overlay.show{display:flex;}
-#node-popup{background:var(--bg2);border:1px solid var(--border);border-radius:16px;
-  max-width:520px;width:100%;max-height:85vh;display:flex;flex-direction:column;
-  box-shadow:0 20px 60px rgba(0,0,0,0.5);overflow:hidden;}
-.node-popup-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
-  padding:18px 20px;border-bottom:1px solid var(--border);flex-shrink:0;}
-.node-popup-title{font-size:1.1rem;font-weight:700;line-height:1.3;}
-.node-popup-cat{font-family:var(--mono);font-size:0.55rem;text-transform:uppercase;
-  letter-spacing:1px;color:var(--muted2);margin-top:4px;}
-.node-popup-close{background:transparent;border:none;color:var(--muted2);cursor:pointer;
-  font-size:18px;padding:2px 6px;line-height:1;border-radius:6px;flex-shrink:0;}
-.node-popup-close:hover{color:var(--text);background:rgba(255,255,255,0.06);}
-.node-popup-body{padding:18px 20px;overflow-y:auto;flex:1;}
-.node-popup-body::-webkit-scrollbar{width:4px;}
-.node-popup-body::-webkit-scrollbar-thumb{background:rgba(0,229,255,0.2);border-radius:2px;}
-.node-popup-desc{font-size:0.8rem;color:var(--muted2);line-height:1.6;margin-bottom:16px;
-  padding-bottom:14px;border-bottom:1px solid var(--border);}
-.node-popup-prereq{margin-bottom:14px;}
-.node-popup-prereq .node-popup-label{font-family:var(--mono);font-size:0.52rem;
-  color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
-.node-popup-tags{display:flex;flex-wrap:wrap;gap:6px;}
-.node-popup-tag{padding:4px 10px;border-radius:6px;border:1px solid var(--border);
-  font-size:0.65rem;color:var(--muted2);background:rgba(255,255,255,0.03);}
-.node-popup-info-label{font-family:var(--mono);font-size:0.52rem;color:var(--muted);
-  text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
-.node-popup-info{font-size:0.8rem;color:var(--text);line-height:1.75;white-space:pre-wrap;}
+ 
+/* NODE DETAIL PANEL (additional info, separate from learning path) */
+#node-detail-panel{position:absolute;top:68px;left:60px;pointer-events:all;
+  width:320px;max-width:36vw;max-height:calc(100vh - 140px);
+  background:rgba(2,5,8,0.92);border:1px solid var(--border);border-radius:12px;
+  padding:10px 12px 14px;overflow-y:auto;backdrop-filter:blur(16px);
+  box-sizing:border-box;z-index:12;}
+.node-detail-header{display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:6px;cursor:move;}
+.node-detail-label{font-family:var(--mono);font-size:0.55rem;color:var(--muted2);
+  text-transform:uppercase;letter-spacing:1.3px;}
+.node-detail-toggle{background:transparent;border:1px solid var(--border);border-radius:6px;
+  color:var(--muted2);font-family:var(--mono);font-size:0.6rem;padding:2px 6px;
+  cursor:pointer;transition:all 0.15s;}
+.node-detail-toggle:hover{border-color:rgba(0,229,255,0.3);color:var(--accent);
+  background:rgba(0,229,255,0.06);}
+.node-detail-body{margin-top:4px;}
+.node-detail-title{font-size:0.9rem;font-weight:700;line-height:1.3;margin-bottom:2px;}
+.node-detail-cat{font-family:var(--mono);font-size:0.55rem;text-transform:uppercase;
+  letter-spacing:1px;color:var(--muted2);margin-bottom:8px;}
+.node-detail-desc{font-size:0.7rem;color:var(--muted2);line-height:1.6;margin-bottom:10px;}
+.node-detail-info-label{font-family:var(--mono);font-size:0.52rem;color:var(--muted);
+  text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.node-detail-info{font-size:0.74rem;color:var(--text);line-height:1.8;white-space:pre-wrap;}
+#node-detail-resize{position:absolute;right:5px;bottom:5px;width:12px;height:12px;
+  border-radius:2px;border:1px solid var(--border);background:rgba(255,255,255,0.04);
+  cursor:se-resize;}
+#node-detail-panel.collapsed .node-detail-body{display:none;}
+#node-detail-panel.collapsed #node-detail-resize{display:none;}
 
 /* FOOTER (graph screen) */
 #graph-footer{position:absolute;bottom:0;left:0;right:0;height:48px;
@@ -450,6 +448,23 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);width:100vw;
       <div id="leg-items"></div>
     </div>
 
+    <div id="node-detail-panel">
+      <div class="node-detail-header">
+        <div class="node-detail-label">Selected concept</div>
+        <button class="node-detail-toggle" id="node-detail-toggle" aria-label="Collapse details">−</button>
+      </div>
+      <div class="node-detail-body" id="node-detail-body">
+        <div class="node-detail-title" id="node-detail-title">No concept selected</div>
+        <div class="node-detail-cat" id="node-detail-cat"></div>
+        <div class="node-detail-desc" id="node-detail-desc"></div>
+        <div class="node-detail-info-label">Additional info</div>
+        <div class="node-detail-info" id="node-detail-info">
+          Click a node in the map to see extended explanations here.
+        </div>
+      </div>
+      <div id="node-detail-resize"></div>
+    </div>
+
     <button id="lp-toggle">🎓 Learning Path</button>
 
     <div id="lp-panel">
@@ -475,7 +490,7 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);width:100vw;
         <div class="nt-pl">Prerequisites</div>
         <div id="nt-pre-tags"></div>
       </div>
-      <div class="nt-hint">Click to focus connections · Click again for details · Right-click to open details</div>
+      <div class="nt-hint">Click to focus connections · Details appear in the side card</div>
     </div>
 
     <div id="graph-footer">
@@ -484,28 +499,7 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);width:100vw;
         <div class="footer-prog-bar"><div class="footer-prog-fill" id="footer-prog-fill" style="width:0%"></div></div>
         <span class="footer-prog-pct" id="footer-prog-pct">0%</span>
       </div>
-      <div id="hint-bar">drag to pan · scroll to zoom · hover to preview · click to focus · click again or right-click for details</div>
-    </div>
-
-    <div id="node-popup-overlay">
-      <div id="node-popup">
-        <div class="node-popup-hdr">
-          <div>
-            <div class="node-popup-title" id="node-popup-title"></div>
-            <div class="node-popup-cat" id="node-popup-cat"></div>
-          </div>
-          <button class="node-popup-close" id="node-popup-close" aria-label="Close">✕</button>
-        </div>
-        <div class="node-popup-body">
-          <div class="node-popup-desc" id="node-popup-desc"></div>
-          <div class="node-popup-prereq" id="node-popup-prereq" style="display:none">
-            <div class="node-popup-label">Prerequisites</div>
-            <div class="node-popup-tags" id="node-popup-tags"></div>
-          </div>
-          <div class="node-popup-info-label">Additional info</div>
-          <div class="node-popup-info" id="node-popup-info"></div>
-        </div>
-      </div>
+      <div id="hint-bar">drag to pan · scroll to zoom · hover to preview · click to focus & see details</div>
     </div>
   </div>
 </div>
@@ -1842,64 +1836,44 @@ function buildGraph(data) {
     tip.style.left = x+'px'; tip.style.top = y+'px';
   }
 
-  // ── NODE POPUP ──
-  const popupOverlay = document.getElementById('node-popup-overlay');
-  const popupTitle = document.getElementById('node-popup-title');
-  const popupCat = document.getElementById('node-popup-cat');
-  const popupDesc = document.getElementById('node-popup-desc');
-  const popupPrereq = document.getElementById('node-popup-prereq');
-  const popupTags = document.getElementById('node-popup-tags');
-  const popupInfo = document.getElementById('node-popup-info');
-  const popupBody = document.getElementById('node-popup-body');
-  const popupBox = document.getElementById('node-popup');
+  // ── NODE DETAIL PANEL (floating card) ──
+  const detailPanel = document.getElementById('node-detail-panel');
+  const detailTitle = document.getElementById('node-detail-title');
+  const detailCat = document.getElementById('node-detail-cat');
+  const detailDesc = document.getElementById('node-detail-desc');
+  const detailInfo = document.getElementById('node-detail-info');
 
-  // Allow scrolling inside the popup without zooming/panning the graph
-  const swallowWheel = (e) => {
-    e.stopPropagation();
-  };
-  [popupOverlay, popupBox, popupBody].forEach(el => {
-    if (el) el.addEventListener('wheel', swallowWheel);
-  });
+  function showNodeDetail(d) {
+    if (d.type === 'root') return;
 
-  function openNodePopup(d) {
     const cat = data.categories.find(c => c.id === (d.type === 'category' ? d.id : d.category));
-    popupTitle.textContent = d.label;
-    popupTitle.style.color = d.color;
-    popupCat.textContent = (cat?.label || '').toUpperCase();
-    popupCat.style.color = d.color;
-    popupDesc.textContent = d.description || '';
 
-    if (d.type === 'concept') {
-      const prereqs = d.prerequisites?.filter(Boolean) || [];
-      if (prereqs.length) {
-        popupTags.innerHTML = prereqs.map(pid => {
-          const pn = nodeMap[pid];
-          return `<span class="node-popup-tag">${pn?.label || pid}</span>`;
-        }).join('');
-        popupPrereq.style.display = 'block';
-      } else {
-        popupPrereq.style.display = 'none';
-      }
-      // Always read live data so enrichment arriving post-render takes effect
-      const liveNode = appState.data?.nodes?.find(n => n.id === d.id);
-      const extra = ((liveNode?.additionalInfo || d.additionalInfo) || '').trim();
-      popupInfo.textContent = extra || 'No additional info for this concept. Use a map generated with the updated prompt to see extended explanations here.';
-    } else {
-      popupPrereq.style.display = 'none';
-      const inCategory = conceptNodes.filter(c => c.category === d.id).map(c => c.label);
-      popupInfo.textContent = inCategory.length
-        ? `Concepts in this domain: ${inCategory.join(', ')}.`
-        : (d.description || '');
+    if (detailTitle) {
+      detailTitle.textContent = d.label;
+      detailTitle.style.color = d.color;
     }
-    popupOverlay.classList.add('show');
-  }
+    if (detailCat) {
+      detailCat.textContent = (cat?.label || '').toUpperCase();
+      detailCat.style.color = d.color;
+    }
+    if (detailDesc) {
+      detailDesc.textContent = d.description || '';
+    }
 
-  function closeNodePopup() {
-    popupOverlay.classList.remove('show');
+    if (detailInfo) {
+      if (d.type === 'concept') {
+        // Always read live data so enrichment arriving post-render takes effect
+        const liveNode = appState.data?.nodes?.find(n => n.id === d.id);
+        const extra = ((liveNode?.additionalInfo || d.additionalInfo) || '').trim();
+        detailInfo.textContent = extra || 'No additional info for this concept. Use a map generated with the updated prompt to see extended explanations here.';
+      } else {
+        const inCategory = conceptNodes.filter(c => c.category === d.id).map(c => c.label);
+        detailInfo.textContent = inCategory.length
+          ? `Concepts in this domain: ${inCategory.join(', ')}.`
+          : (d.description || '');
+      }
+    }
   }
-
-  document.getElementById('node-popup-close').addEventListener('click', closeNodePopup);
-  popupOverlay.addEventListener('click', (e) => { if (e.target === popupOverlay) closeNodePopup(); });
 
   function applyFocus(d) {
     activeNode = d.id;
@@ -1925,23 +1899,12 @@ function buildGraph(data) {
     highlightLpStep(d.id);
   }
 
-  // ── CLICK: first click = focus, second click = open details ──
+  // ── CLICK: focus + show details in sidebar ──
   NE.on('click', (e, d) => {
     e.stopPropagation();
     if (d.type === 'root') return;
-    if (activeNode === d.id) {
-      openNodePopup(d);
-      return;
-    }
     applyFocus(d);
-  });
-
-  // ── RIGHT-CLICK: open details directly (and focus so graph matches) ──
-  NE.on('contextmenu', (e, d) => {
-    e.preventDefault();
-    if (d.type === 'root') return;
-    if (activeNode !== d.id) applyFocus(d);
-    openNodePopup(d);
+    showNodeDetail(d);
   });
 
   svg.on('click', clearFocus);
@@ -1952,7 +1915,6 @@ function buildGraph(data) {
     LE.classed('hi',false).classed('dim',false);
     document.querySelectorAll('.lp-step').forEach(el=>el.classList.remove('active'));
     tip.classList.remove('show');
-    closeNodePopup();
   }
 
   // ── LEGEND ──
@@ -2133,6 +2095,102 @@ document.getElementById('lp-close').addEventListener('click', () => {
   document.getElementById('lp-panel').classList.remove('open');
   document.getElementById('lp-toggle').classList.remove('on');
 });
+
+// ── NODE DETAIL PANEL DRAG / RESIZE / COLLAPSE ──
+(function initNodeDetailPanelChrome() {
+  const panel = document.getElementById('node-detail-panel');
+  if (!panel) return;
+
+  const header = panel.querySelector('.node-detail-header');
+  const toggleBtn = document.getElementById('node-detail-toggle');
+  const body = document.getElementById('node-detail-body');
+  const resizeHandle = document.getElementById('node-detail-resize');
+
+  // Dragging
+  if (header) {
+    let dragging = false;
+    let startX = 0, startY = 0, startLeft = 0, startTop = 0;
+
+    const onMove = (e) => {
+      if (!dragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      let left = startLeft + dx;
+      let top = startTop + dy;
+      const maxLeft = window.innerWidth - panel.offsetWidth - 8;
+      const maxTop = window.innerHeight - 80;
+      left = Math.max(8, Math.min(maxLeft, left));
+      top = Math.max(56, Math.min(maxTop, top));
+      panel.style.left = left + 'px';
+      panel.style.top = top + 'px';
+    };
+
+    const onUp = () => {
+      dragging = false;
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    };
+
+    header.addEventListener('mousedown', (e) => {
+      if ((e.target && e.target.id === 'node-detail-toggle') || e.button !== 0) return;
+      dragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      const rect = panel.getBoundingClientRect();
+      startLeft = rect.left;
+      startTop = rect.top;
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+      e.preventDefault();
+    });
+  }
+
+  // Collapse
+  if (toggleBtn && body) {
+    toggleBtn.addEventListener('click', () => {
+      const collapsed = panel.classList.toggle('collapsed');
+      toggleBtn.textContent = collapsed ? '▢' : '−';
+    });
+  }
+
+  // Resize from bottom-right corner
+  if (resizeHandle) {
+    let resizing = false;
+    let startX = 0, startY = 0, startW = 0, startH = 0;
+
+    const onResizeMove = (e) => {
+      if (!resizing) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      const minW = 260, maxW = Math.min(520, window.innerWidth - 40);
+      const minH = 160, maxH = window.innerHeight - 120;
+      const newW = Math.max(minW, Math.min(maxW, startW + dx));
+      const newH = Math.max(minH, Math.min(maxH, startH + dy));
+      panel.style.width = newW + 'px';
+      panel.style.height = newH + 'px';
+      panel.style.maxHeight = 'none';
+    };
+
+    const onResizeUp = () => {
+      resizing = false;
+      document.removeEventListener('mousemove', onResizeMove);
+      document.removeEventListener('mouseup', onResizeUp);
+    };
+
+    resizeHandle.addEventListener('mousedown', (e) => {
+      if (e.button !== 0) return;
+      resizing = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      const rect = panel.getBoundingClientRect();
+      startW = rect.width;
+      startH = rect.height;
+      document.addEventListener('mousemove', onResizeMove);
+      document.addEventListener('mouseup', onResizeUp);
+      e.preventDefault();
+    });
+  }
+})();
 
 // ── GRAPH BACK ──
 document.getElementById('graph-back').addEventListener('click', () => {
