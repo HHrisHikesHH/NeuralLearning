@@ -333,6 +333,230 @@ body{background:var(--bg);font-family:var(--sans);color:var(--text);width:100vw;
   border:1px solid rgba(255,107,107,0.2);}
 .mp-launch-hint{font-family:var(--mono);font-size:0.55rem;color:var(--muted2);
   text-align:center;margin-bottom:8px;}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1024px) {
+  #topbar {
+    height: auto;
+    min-height: 56px;
+    flex-wrap: wrap;
+    row-gap: 8px;
+    align-content: flex-start;
+    padding: 10px 12px;
+  }
+  .tb-stats {
+    width: 100%;
+    margin-left: 0;
+    order: 5;
+  }
+  #search {
+    width: min(220px, 58vw);
+  }
+  .si {
+    right: calc(12px + min(220px, 58vw) - 22px);
+  }
+  #lp-panel {
+    width: min(360px, 88vw);
+  }
+  #graph-footer {
+    height: auto;
+    min-height: 44px;
+    padding: 10px 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    width: 100%;
+    height: 100dvh;
+  }
+  .land-logo {
+    font-size: 2.2rem;
+  }
+  .land-tag {
+    margin-bottom: 20px;
+    letter-spacing: 1px;
+  }
+  .land-card {
+    padding: 18px 16px;
+    border-radius: 14px;
+    width: min(96vw, 520px);
+  }
+  .depth-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .depth-btn {
+    min-height: 64px;
+    padding: 10px 12px;
+  }
+  .btn-primary,
+  .btn-secondary,
+  .btn-launch,
+  .btn-copy,
+  .pw-back,
+  .tb-back,
+  #lp-toggle {
+    min-height: 42px;
+  }
+  #s-prompt {
+    padding: 14px 0 22px;
+  }
+  .prompt-wrap {
+    width: min(96vw, 700px);
+  }
+  .pw-hdr {
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .step-pills {
+    flex-wrap: wrap;
+  }
+  .pw-section {
+    padding: 14px;
+    border-radius: 12px;
+  }
+  .copy-row {
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .mp-row {
+    flex-direction: column;
+  }
+  .mp-slot {
+    padding: 14px;
+    border-radius: 12px;
+  }
+  .mp-slot-sub {
+    display: none;
+  }
+  #zctrl {
+    top: auto;
+    left: auto;
+    right: 10px;
+    bottom: 78px;
+    flex-direction: row;
+    gap: 6px;
+  }
+  .zb {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+  #legend {
+    left: 10px;
+    right: 10px;
+    bottom: 8px;
+    max-height: 130px;
+    padding: 10px;
+  }
+  .leg-item {
+    padding: 7px 5px;
+  }
+  .leg-lbl {
+    font-size: 0.72rem;
+  }
+  #topbar {
+    gap: 8px;
+    padding: 8px 10px;
+  }
+  .tb-topic {
+    width: 100%;
+    font-size: 0.8rem;
+    order: 2;
+  }
+  .tb-depth {
+    order: 3;
+  }
+  .tb-stats {
+    order: 4;
+    font-size: 0.52rem;
+  }
+  #search {
+    width: min(52vw, 200px);
+    font-size: 0.62rem;
+  }
+  .si {
+    right: calc(10px + min(52vw, 200px) - 20px);
+  }
+  #node-detail-panel {
+    top: auto;
+    left: 10px;
+    right: 10px;
+    bottom: 160px;
+    width: auto;
+    max-width: none;
+    max-height: 34vh;
+    border-radius: 10px;
+    padding: 9px 10px 12px;
+  }
+  .node-detail-header {
+    cursor: default;
+  }
+  #node-detail-resize {
+    display: none;
+  }
+  #lp-toggle {
+    top: auto;
+    bottom: 78px;
+    right: 10px;
+  }
+  #lp-panel {
+    top: auto;
+    bottom: 0;
+    width: 100vw;
+    height: min(56vh, 460px);
+    border-left: none;
+    border-top: 1px solid var(--border);
+    border-radius: 14px 14px 0 0;
+    transform: translateY(100%);
+  }
+  #lp-panel.open {
+    transform: translateY(0);
+  }
+  #graph-footer {
+    gap: 8px;
+    padding: 8px 10px;
+  }
+  .footer-prog-bar {
+    width: 90px;
+  }
+  #hint-bar {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .land-logo {
+    font-size: 1.9rem;
+  }
+  .land-tag {
+    font-size: 0.58rem;
+  }
+  .lc-input,
+  .paste-area {
+    font-size: 0.9rem;
+  }
+  .prompt-box {
+    font-size: 0.6rem;
+    line-height: 1.6;
+  }
+  .btn-primary,
+  .btn-launch {
+    font-size: 0.68rem;
+  }
+  .btn-secondary {
+    font-size: 0.58rem;
+  }
+  #topbar {
+    padding-top: max(8px, env(safe-area-inset-top));
+  }
+  #graph-footer {
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+}
 </style>
 </head>
 <body>
@@ -539,6 +763,10 @@ let appState = {
   skeletonData: null,
   enrichBatches: [null, null]
 };
+
+function isMobileViewport() {
+  return window.matchMedia('(max-width: 768px)').matches;
+}
 
 // ══════════════════════════════════════════
 // SCHEMA
@@ -1648,6 +1876,12 @@ function buildGraph(data) {
   document.getElementById('tb-topic').textContent = data.topic;
   document.getElementById('tb-depth').textContent = data.depth.toUpperCase();
   document.getElementById('tb-stats').textContent = `${data.nodes.length} nodes · ${data.links.length} synapses`;
+  const hintBar = document.getElementById('hint-bar');
+  if (hintBar) {
+    hintBar.textContent = isMobileViewport()
+      ? 'pinch to zoom · drag to pan · tap nodes for details'
+      : 'drag to pan · scroll to zoom · hover to preview · click to focus & see details';
+  }
 
   // Color map
   const catColor = Object.fromEntries(data.categories.map(c => [c.id, c.color]));
@@ -2107,7 +2341,7 @@ document.getElementById('lp-close').addEventListener('click', () => {
   const resizeHandle = document.getElementById('node-detail-resize');
 
   // Dragging
-  if (header) {
+  if (header && !isMobileViewport()) {
     let dragging = false;
     let startX = 0, startY = 0, startLeft = 0, startTop = 0;
 
@@ -2154,7 +2388,7 @@ document.getElementById('lp-close').addEventListener('click', () => {
   }
 
   // Resize from bottom-right corner
-  if (resizeHandle) {
+  if (resizeHandle && !isMobileViewport()) {
     let resizing = false;
     let startX = 0, startY = 0, startW = 0, startH = 0;
 
