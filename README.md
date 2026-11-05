@@ -156,7 +156,7 @@ Then open:
 Run the tests (Node 22+). The unit and integration tests need no dependencies:
 
 ```bash
-node --test tests/
+node --test "tests/*.test.mjs"
 ```
 
 The syntax check and the browser tests use the dev tooling in `package.json` (Playwright only;
@@ -166,7 +166,7 @@ the app itself has no runtime dependencies):
 npm ci
 npx playwright install chromium
 npm run check      # every .js / .mjs file parses
-npm test           # same as node --test tests/
+npm test           # same as node --test "tests/*.test.mjs"
 npm run test:e2e   # e2e/*.spec.mjs: the owner app against the fake GitHub, plus the viewer
 ```
 
