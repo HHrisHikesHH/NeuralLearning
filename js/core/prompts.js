@@ -1,4 +1,6 @@
 // Prompt templates for generating NCF knowledge maps with an external LLM.
+import { splitBatches, topicSlug } from './multipart.js';
+
 export const SCHEMA_DISPLAY = `{
   "_ncf": "1",
   "topic": "string",
@@ -392,14 +394,10 @@ COGNITIVE BUDGET STRATEGY — READ BEFORE GENERATING:
 }
 
 export function buildEnrichPrompt(topic, depth, skeletonData, batchNum) {
-  // Sort nodes by learning path order for coherent batching
-  const lpOrder = new Map(skeletonData.learningPath.map(s => [s.nodeId, s.order]));
-  const sorted = [...skeletonData.nodes].sort((a, b) =>
-    (lpOrder.get(a.id) ?? 999) - (lpOrder.get(b.id) ?? 999)
-  );
-  const mid = Math.ceil(sorted.length / 2);
-  const thisBatch = batchNum === 1 ? sorted.slice(0, mid) : sorted.slice(mid);
-  const otherBatch = batchNum === 1 ? sorted.slice(mid) : sorted.slice(0, mid);
+  // Nodes sorted by learning path order and split in half (shared with the import validator)
+  const { sorted, batch1, batch2 } = splitBatches(skeletonData);
+  const thisBatch = batchNum === 1 ? batch1 : batch2;
+  const otherBatch = batchNum === 1 ? batch2 : batch1;
 
   // Compact full node list (context, ~50 chars per node)
   const allNodesList = skeletonData.nodes
@@ -416,7 +414,7 @@ export function buildEnrichPrompt(topic, depth, skeletonData, batchNum) {
   }).join('\n\n');
 
   const otherList = otherBatch.map(n => `  ${n.id}`).join(' · ');
-  const topicSlug = topic.toLowerCase().replace(/[^a-z0-9]+/g,'_').substring(0,25);
+  const slug = topicSlug(topic);
 
   return `╔══════════════════════════════════════════════════════════════════════════════════╗
 ║           NEURON — CONTENT ENRICHMENT  (Part ${batchNum + 1} of 3 · Batch ${batchNum} of 2)              ║
@@ -464,7 +462,7 @@ OUTPUT FORMAT — NCE (Neuron Content Enrichment):
 
   {
     "_nce": "1",
-    "_id": "${topicSlug}_${depth}",
+    "_id": "${slug}_${depth}",
     "batch": ${batchNum},
     "E_cols": ["ni","desc","info","analogy"],
     "E": [

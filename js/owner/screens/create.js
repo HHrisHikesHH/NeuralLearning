@@ -1,10 +1,12 @@
 // New map: topic + depth, then generate a prompt (or paste existing JSON), validate, visualise.
-// Ported from the original landing and prompt screens; the researcher depth keeps the
-// three-part skeleton + enrichment flow.
+// Ported from the original landing and prompt screens. The researcher depth keeps the
+// three-part Skeleton + Data Part 1 + Data Part 2 flow, either generated step by step with the
+// AI or pasted in one go from responses the owner already has (see core/multipart.js).
 
 import { el, clear, copyText, flashButton, put } from '../../core/dom.js';
 import { SCHEMA_DISPLAY, buildPrompt, buildSkeletonPrompt, buildEnrichPrompt } from '../../core/prompts.js';
-import { loadMapFromText, parseNCE, mergeEnrichment, sanitizeMap, stripFences } from '../../core/ncf.js';
+import { loadMapFromText } from '../../core/ncf.js';
+import { assembleResearcherMap, topicSlug } from '../../core/multipart.js';
 import { confirmDialog } from '../ui.js';
 
 const DEPTHS = [
@@ -15,8 +17,10 @@ const DEPTHS = [
 
 export function newDraft({ topic, depth, fromJson }) {
   return {
-    topic, depth, fromJson, multi: depth === 'researcher' && !fromJson,
-    map: null, skeleton: null, enrich: [null, null], texts: ['', '', ''], pasteText: '',
+    topic, depth, fromJson, multi: depth === 'researcher',
+    // 'generate': prompts + step-by-step pasting; 'import': paste three existing responses.
+    mpMode: fromJson ? 'import' : 'generate',
+    map: null, texts: ['', '', ''], pasteText: '',
     savedId: null, title: null, dirty: false, progress: [],
   };
 }
@@ -71,7 +75,7 @@ export function renderNew(root, { app, navigate }) {
       el('div', { class: 'stack' },
         el('button', { class: 'btn btn-primary btn-block', type: 'button', on: { click: () => start(false) } }, 'Generate knowledge prompt →'),
         el('button', { class: 'btn btn-ghost btn-block', type: 'button', on: { click: () => start(true) } }, 'Already have JSON? Paste & visualise →'))),
-    el('p', { class: 'muted' }, 'Neuron writes a detailed prompt for any AI assistant (Claude, GPT, Gemini…). Paste its JSON answer back here to build the map.')));
+    el('p', { class: 'muted' }, 'Neuron writes a detailed prompt for any AI assistant (Claude, GPT, Gemini…). Paste its JSON answer back here to build the map. With Researcher selected, “Already have JSON?” takes the three Researcher responses (skeleton + two data parts).')));
   requestAnimationFrame(() => topic.focus());
 }
 
@@ -104,7 +108,7 @@ export function renderBuild(root, { app, navigate }) {
   put(root, page);
   const back = el('button', { class: 'btn btn-ghost btn-sm', type: 'button', on: { click: () => navigate(d.savedId ? `#/map/${d.savedId}` : '#/new') } }, '← Back');
   put(page, el('div', { class: 'page-head' },
-    el('div', { class: 'row' }, back, el('h1', { class: 'page-title' }, d.fromJson ? 'Paste your map JSON' : ['Build map for ', el('span', { class: 'muted' }, `“${d.topic}”`)])),
+    el('div', { class: 'row' }, back, el('h1', { class: 'page-title' }, d.fromJson ? (d.multi ? 'Import a three-part Researcher map' : 'Paste your map JSON') : ['Build map for ', el('span', { class: 'muted' }, `“${d.topic}”`)])),
     el('span', { class: 'badge badge-accent' }, d.depth.toUpperCase())));
 
   if (d.multi) return renderMulti(page, app, navigate);
@@ -162,96 +166,184 @@ export function renderBuild(root, { app, navigate }) {
 
   put(page, el('section', { class: 'card' },
     el('label', { class: 'field' }, el('span', { class: 'label' }, d.fromJson ? 'Paste the JSON here' : 'Step 2 — Paste the JSON output here'), area),
-    msg, schemaToggle()), launch);
+    msg, schemaToggle(),
+    d.fromJson ? el('p', { class: 'muted' }, 'Have the three Researcher responses (skeleton + Data Part 1 + Data Part 2) instead? ',
+      el('button', { class: 'link-btn', type: 'button', on: { click: () => { Object.assign(d, { depth: 'researcher', multi: true, mpMode: 'import' }); app.refreshView(); } } }, 'Import three parts')) : null),
+    launch);
   if (area.value) validate();
   return () => clearTimeout(t);
 }
 
+// Researcher three-part screen. One screen, two modes sharing the same three inputs:
+//  generate: copy each prompt in turn; the graph can be visualised after the skeleton and
+//            enriched progressively (historical behaviour), with missing explanations named.
+//  import:   paste three existing responses in any order; the map only renders once all three
+//            are valid and every concept has its explanation.
 function renderMulti(page, app, navigate) {
   const d = app.draft;
-  const slots = [];
-  const hint = el('p', { class: 'muted', 'aria-live': 'polite' }, 'The graph renders after the skeleton · explanations fill in after batches A & B');
-  const launch = el('button', { class: 'btn btn-primary btn-block', type: 'button', disabled: true }, '⬡ Visualise knowledge graph →');
+  const canGenerate = !d.fromJson;
+  if (!canGenerate) d.mpMode = 'import';
+  const timers = [];
+  let last = null;
+
+  const modeBtns = [
+    { id: 'generate', label: 'Generate with AI' },
+    { id: 'import', label: 'Paste existing responses' },
+  ].map((m) => {
+    const b = el('button', { class: 'seg-opt', type: 'button', 'aria-pressed': String(d.mpMode === m.id), on: { click: () => setMode(m.id) } }, m.label);
+    b.dataset.mode = m.id;
+    return b;
+  });
+  const modeIntro = el('p', { class: 'muted', 'aria-live': 'polite' });
+  const head = canGenerate
+    ? el('div', { class: 'stack' }, el('div', { class: 'seg', role: 'group', 'aria-label': 'Researcher workflow' }, ...modeBtns), modeIntro)
+    : el('p', { class: 'muted' }, 'Paste the three Researcher responses you already have — the topic comes from the skeleton. Need the prompts? ',
+      el('a', { class: 'link-btn', href: '#/new' }, 'Start from a topic'), '.');
 
   const meta = [
-    { title: 'Skeleton', sub: 'Structure only · the graph renders right after this' },
-    { title: 'Enrich — Batch A', sub: 'Unlocks after the skeleton' },
-    { title: 'Enrich — Batch B', sub: 'Unlocks after batch A' },
+    { title: 'Skeleton', importTitle: 'Skeleton JSON', sub: 'Structure only · the graph renders right after this', importSub: 'Part 1 of 3 · NCF with every concept, link and learning step' },
+    { title: 'Enrich — Data Part 1', importTitle: 'Data Part 1 JSON', sub: 'Unlocks after the skeleton', importSub: 'Part 2 of 3 · NCE batch 1' },
+    { title: 'Enrich — Data Part 2', importTitle: 'Data Part 2 JSON', sub: 'Unlocks after Data Part 1', importSub: 'Part 3 of 3 · NCE batch 2' },
   ];
-  meta.forEach((m, i) => {
-    const prompt = el('pre', { class: 'prompt-box', tabindex: '0' }, i === 0 ? buildSkeletonPrompt(d.topic, d.depth) : 'Waiting for the skeleton…');
+  const slots = meta.map((m, i) => {
+    const prompt = el('pre', { class: 'prompt-box', tabindex: '0', 'aria-label': `${m.title} prompt` }, i === 0 && canGenerate ? buildSkeletonPrompt(d.topic, d.depth) : 'Waiting for the skeleton…');
     const copy = copyRow(() => prompt.textContent);
-    const area = el('textarea', { class: 'textarea', spellcheck: 'false', placeholder: i === 0 ? 'Paste the skeleton NCF response here…' : 'Paste the NCE enrichment response here…' });
+    const area = el('textarea', { class: 'textarea', spellcheck: 'false', id: `mp-paste-${i}`, placeholder: i === 0 ? 'Paste the skeleton NCF JSON response here…' : `Paste the Data Part ${i} (NCE) JSON response here…` });
     area.value = d.texts[i] || '';
     const status = el('div', { 'aria-live': 'polite' });
-    const badge = el('span', { class: 'mp-badge' }, String(i + 1));
+    const badge = el('span', { class: 'mp-badge', 'aria-hidden': 'true' }, String(i + 1));
+    const title = el('h2', { class: 'card-title' });
+    const sub = el('p', { class: 'muted' });
+    const label = el('label', { class: 'sr-only', for: area.id });
+    const promptWrap = el('div', { class: 'stack' }, prompt, el('div', { class: 'row' }, copy));
     const slot = el('section', { class: 'card mp-slot' },
-      el('div', { class: 'mp-slot-head' }, badge, el('div', {}, el('h2', { class: 'card-title' }, m.title), el('p', { class: 'muted' }, m.sub))),
-      prompt, el('div', { class: 'row' }, copy), area, status);
-    slots.push({ slot, prompt, copy, area, status, badge });
-    let t;
-    area.addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => handle(i), 500); });
+      el('div', { class: 'mp-slot-head' }, badge, el('div', {}, title, sub)), promptWrap, label, area, status);
+    area.addEventListener('input', () => { clearTimeout(timers[i]); timers[i] = setTimeout(refresh, 500); });
+    return { m, slot, prompt, promptWrap, copy, area, status, badge, title, sub, label };
   });
+
+  const assembly = el('div', { 'aria-live': 'polite', class: 'stack' });
+  const hint = el('p', { class: 'muted', 'aria-live': 'polite' });
+  const launch = el('button', { class: 'btn btn-primary btn-block', type: 'button', disabled: true }, '⬡ Visualise knowledge graph →');
+
+  function setMode(mode) {
+    d.mpMode = mode;
+    modeBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
+    refresh();
+  }
 
   function setState(i, s) {
     const x = slots[i];
     x.slot.classList.toggle('is-active', s === 'active');
     x.slot.classList.toggle('is-done', s === 'done');
+    x.slot.classList.toggle('is-err', s === 'err');
     const locked = s === 'locked';
     x.slot.setAttribute('aria-disabled', String(locked));
     x.area.disabled = locked;
     x.copy.disabled = locked;
-    x.badge.textContent = s === 'done' ? '✓' : String(i + 1);
+    x.badge.textContent = s === 'done' ? '✓' : s === 'err' ? '!' : String(i + 1);
   }
 
-  function updateLaunch() {
-    if (!d.skeleton) { launch.disabled = true; return; }
-    const total = d.skeleton.nodes.length;
-    const enriched = d.enrich.filter(Boolean).reduce((s, m) => s + Object.keys(m).length, 0);
-    launch.disabled = false;
-    if (enriched >= total) { launch.textContent = '⬡ Visualise full graph →'; hint.textContent = 'All concepts enriched — full explanations ready'; }
-    else if (enriched) { launch.textContent = `⬡ Visualise (${enriched}/${total} enriched) →`; hint.textContent = `${enriched} of ${total} concepts have full explanations so far`; }
-    else { launch.textContent = '⬡ Visualise skeleton →'; hint.textContent = `${total} concepts loaded — add batches A & B for full explanations`; }
-  }
+  function refresh() {
+    const gen = d.mpMode === 'generate';
+    slots.forEach((x) => { d.texts[slots.indexOf(x)] = x.area.value; });
+    const [t0, t1, t2] = d.texts;
+    last = assembleResearcherMap({ skeleton: t0, part1: t1, part2: t2 }, {
+      requireComplete: !gen,
+      expectedId: gen ? `${topicSlug(d.topic)}_${d.depth}` : null,
+    });
+    const r = last;
+    const res = [r.parts.skeleton, r.parts.part1, r.parts.part2];
+    const skOk = res[0].ok;
 
-  function handle(i) {
-    const x = slots[i];
-    d.texts[i] = x.area.value;
-    clear(x.status);
-    const txt = stripFences(x.area.value);
-    if (!txt) return;
-    if (i === 0) {
-      const r = loadMapFromText(txt);
-      if (!r.ok) { put(x.status, errorNotice(r.errors.slice(0, 12).join('\n'))); return; }
-      d.skeleton = r.data;
-      put(x.status, el('div', { class: 'notice notice-ok' }, `✓ Skeleton: ${r.data.nodes.length} concepts · ${r.data.links.length} links · graph ready`));
-      setState(0, 'done');
-      slots[1].prompt.textContent = buildEnrichPrompt(d.topic, d.depth, d.skeleton, 1);
-      slots[2].prompt.textContent = buildEnrichPrompt(d.topic, d.depth, d.skeleton, 2);
-      setState(1, d.enrich[0] ? 'done' : 'active');
-      setState(2, d.enrich[1] ? 'done' : d.enrich[0] ? 'active' : 'locked');
-    } else {
-      let nce;
-      try { nce = parseNCE(txt); } catch (e) { put(x.status, errorNotice(`NCE error: ${e.message}`)); return; }
-      d.enrich[i - 1] = nce;
-      put(x.status, el('div', { class: 'notice notice-ok' }, `✓ ${Object.keys(nce).length} concepts enriched`));
-      setState(i, 'done');
-      if (i === 1 && !d.enrich[1]) setState(2, 'active');
+    modeIntro.textContent = gen
+      ? 'Copy each prompt into your AI in turn and paste its answer below it. The graph can be visualised after the skeleton; the two data parts fill in the explanations.'
+      : 'Already have all three responses? Paste each one into its box — in any order. The map renders once all three are valid and complete.';
+
+    const shown = new Set();
+    slots.forEach((x, i) => {
+      x.title.textContent = gen ? x.m.title : x.m.importTitle;
+      x.sub.textContent = gen ? x.m.sub : x.m.importSub;
+      x.label.textContent = gen ? `Paste the ${x.m.title} response` : x.m.importTitle;
+      x.promptWrap.hidden = !gen;
+      clear(x.status);
+      const p = res[i];
+      const has = !!d.texts[i].trim();
+      if (has && p.errors.length) {
+        p.errors.forEach((e) => shown.add(e));
+        put(x.status, errorNotice(p.errors.slice(0, 15).join('\n') + (p.errors.length > 15 ? `\n… and ${p.errors.length - 15} more` : '')));
+      } else if (has) {
+        const text = i === 0
+          ? `✓ Skeleton: ${p.map.nodes.length} concepts · ${p.map.links.length} links · ${p.map.learningPath.length} learning steps`
+          : `✓ Data Part ${i}: ${p.ids.length} concepts enriched` + (skOk ? '' : ' — waiting for the skeleton to cross-check');
+        put(x.status, el('div', { class: 'notice notice-ok' }, text));
+      }
+    });
+
+    if (gen) {
+      slots[1].prompt.textContent = skOk ? buildEnrichPrompt(d.topic, d.depth, res[0].map, 1) : 'Waiting for the skeleton…';
+      slots[2].prompt.textContent = skOk ? buildEnrichPrompt(d.topic, d.depth, res[0].map, 2) : 'Waiting for the skeleton…';
     }
-    updateLaunch();
+    const stateOf = (i) => {
+      const has = !!d.texts[i].trim();
+      if (has && res[i].errors.length) return 'err';
+      if (has && res[i].ok) return 'done';
+      return 'active';
+    };
+    setState(0, stateOf(0));
+    if (gen) {
+      setState(1, skOk ? stateOf(1) : 'locked');
+      setState(2, skOk && res[1].ok ? stateOf(2) : 'locked');
+    } else {
+      setState(1, stateOf(1));
+      setState(2, stateOf(2));
+    }
+
+    // Problems that are not already shown on a slot: cross-part conflicts, missing parts in
+    // import mode, missing explanations, and anything from the final whole-map validation.
+    clear(assembly);
+    const cross = r.errors.filter((e) => !shown.has(e));
+    const anyText = d.texts.some((t) => t.trim());
+    if (cross.length && anyText) {
+      put(assembly, el('div', { class: 'notice notice-err', role: 'alert' },
+        el('strong', {}, 'Cannot assemble the map yet'),
+        el('ul', { class: 'issue-list' }, ...cross.slice(0, 12).map((e) => el('li', {}, e)), cross.length > 12 ? el('li', {}, `… and ${cross.length - 12} more`) : null)));
+    }
+    if (r.warnings.length && skOk) {
+      put(assembly, el('details', { class: 'notice notice-warn' },
+        el('summary', {}, `${r.warnings.length} note${r.warnings.length > 1 ? 's' : ''} to check`),
+        el('ul', { class: 'issue-list' }, ...r.warnings.map((w) => el('li', {}, w)))));
+    }
+
+    launch.disabled = !r.ok;
+    if (!r.ok) {
+      launch.textContent = '⬡ Visualise knowledge graph →';
+      hint.textContent = gen
+        ? (skOk ? 'Fix the problems above to continue.' : 'The graph renders after the skeleton · explanations fill in after Data Parts 1 & 2')
+        : 'Paste all three parts — Neuron validates each one, then combines them.';
+    } else if (r.enriched >= r.total) {
+      launch.textContent = '⬡ Visualise full graph →';
+      hint.textContent = `All ${r.total} concepts enriched — full explanations ready`;
+    } else if (r.enriched) {
+      launch.textContent = `⬡ Visualise (${r.enriched}/${r.total} enriched) →`;
+      hint.textContent = `${r.total - r.enriched} of ${r.total} concepts still have no explanation — add the remaining data part, or visualise now and come back via ← Build`;
+    } else {
+      launch.textContent = '⬡ Visualise skeleton →';
+      hint.textContent = `${r.total} concepts loaded, none explained yet — add Data Parts 1 & 2 for full explanations`;
+    }
   }
 
   launch.addEventListener('click', () => {
-    if (!d.skeleton) return;
-    const enrich = d.enrich.filter(Boolean);
-    d.map = enrich.length ? sanitizeMap(mergeEnrichment(d.skeleton, ...enrich)) : d.skeleton;
+    timers.forEach(clearTimeout);
+    refresh();
+    if (!last?.ok) return;
+    d.map = last.map;
+    if (d.mpMode === 'import' || d.fromJson) d.topic = last.map.topic;
     d.dirty = true;
     navigate('#/draft');
   });
 
-  setState(0, 'active');
-  setState(1, 'locked');
-  setState(2, 'locked');
-  put(page, el('div', { class: 'mp-grid' }, ...slots.map((s) => s.slot)), hint, launch);
-  slots.forEach((s, i) => { if (s.area.value) handle(i); });
+  put(page, head, el('div', { class: 'mp-grid' }, ...slots.map((s) => s.slot)), assembly, hint, launch);
+  refresh();
+  return () => timers.forEach(clearTimeout);
 }
