@@ -1,0 +1,70 @@
+/* Design tokens. Text colours are measured against --bg (#020508):
+   --text 17.9:1 · --text-2 11.1:1 · --text-3 7.2:1 (the lowest allowed for any text).
+   --deco / --deco-2 are for borders and ornament only — never for text. */
+:root {
+  color-scheme: dark;
+
+  --bg: #020508;
+  --bg-1: #060b11;
+  --bg-2: #0a111a;
+  --bg-3: #0f1824;
+  --surface: rgba(6, 11, 17, 0.94);
+  --surface-2: rgba(255, 255, 255, 0.035);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-2: rgba(255, 255, 255, 0.16);
+
+  --accent: #00e5ff;
+  --accent-2: #c77dff;
+  --green: #69f0ae;
+  --yellow: #ffd93d;
+  --red: #ff6b6b;
+  --accent-soft: rgba(0, 229, 255, 0.1);
+  --accent-line: rgba(0, 229, 255, 0.35);
+
+  --text: #e6f2f8;
+  --text-2: #a8c3d1;
+  --text-3: #7f9db0;
+  --deco: #2a4a5e;
+  --deco-2: #4a7a90;
+
+  --sans: 'Exo 2', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'Space Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Type scale (base 16px). --fs-xs is reserved for uppercase mono micro-labels. */
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.875rem;
+  --fs-md: 1rem;
+  --fs-lg: 1.125rem;
+  --fs-xl: 1.375rem;
+  --fs-2xl: 1.75rem;
+  --fs-3xl: 2.5rem;
+  --fs-hero: clamp(2.5rem, 7vw, 3.75rem);
+
+  --lh-tight: 1.25;
+  --lh-ui: 1.45;
+  --lh-prose: 1.65;
+
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 18px;
+  --r-pill: 999px;
+
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sp-7: 48px;
+
+  --tap: 44px;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --t-fast: 150ms;
+  --t-med: 300ms;
+  --shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+  --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --t-fast: 0ms; --t-med: 0ms; }
+}
