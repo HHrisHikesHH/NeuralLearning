@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>OG render (dev tool)</title><meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Exo+2:wght@600;800&family=Space+Mono:wght@700&display=swap">
+<style>html,body{margin:0;background:#020508;overflow:hidden}canvas{display:block;width:1200px;height:630px}</style></head>
+<body><canvas id="c"></canvas>
+<!-- Regenerate assets/og-default.png: serve the repo, then screenshot this page at 1200x630. -->
+<script type="module">
+import { drawOgCard } from '../js/owner/og-image.js';
+await drawOgCard(document.getElementById('c'), { title: 'Turn any topic into a living knowledge graph', depth: '3 depths', eyebrow: 'Knowledge graph builder', colors: ['#4fc3f7', '#c77dff', '#69f0ae', '#ffb74d', '#f48fb1', '#00e5ff'] });
+document.title = 'done';
+</script></body></html>
