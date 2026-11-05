@@ -40,7 +40,14 @@ flowchart LR
    passphrase.
 2. **My maps**: search, sort, open, rename, export, delete and share.
 3. **New map**: topic and depth → copy the prompt into any AI → paste the JSON → validate →
-   visualise → **Save**. Researcher depth uses the three-part skeleton + enrichment flow.
+   visualise → **Save**. The number of AI responses follows the depth, so each one fits within
+   free models' output limits: **Explorer 1** (one complete map), **Practitioner 2** (skeleton,
+   then one data part with every explanation), **Researcher 3** (skeleton, then Data Part 1 and
+   Data Part 2). The multi-part screens show a `1/2 complete`-style progress badge and have two
+   modes: **Generate with AI** (prompts one after another; the graph can be visualised after the
+   skeleton and filled in later via ← Build) and **Paste existing responses** (paste all parts in any
+   order; Neuron validates each one, cross-checks them, and renders only a complete, valid map).
+   "Already have JSON?" opens the inputs for the selected depth.
 4. **Share**: an explicit action with a consent step. It publishes a separate public snapshot.
 5. The vault **auto-locks** after 15 minutes without activity. **Lock** is in the header.
 

@@ -1,4 +1,6 @@
 // Prompt templates for generating NCF knowledge maps with an external LLM.
+import { splitBatches, topicSlug } from './multipart.js';
+
 export const SCHEMA_DISPLAY = `{
   "_ncf": "1",
   "topic": "string",
@@ -353,22 +355,25 @@ If any answer is "no" — revise before outputting.
 NOW OUTPUT THE NCF JSON FOR: ${topic} at ${depth} depth. Remember: columnar arrays only, _ncf field required, no verbose key-per-row objects in N/L/LP.`;
 }
 
-export function buildSkeletonPrompt(topic, depth) {
+// Practitioner maps use 2 parts (skeleton + one data part), Researcher maps 3 (skeleton + two).
+// With the defaults the Researcher prompts are unchanged, byte for byte.
+export function buildSkeletonPrompt(topic, depth, totalParts = 3) {
+  const later = totalParts === 2 ? 'Part 2' : 'Parts 2 & 3';
   // Take the full prompt and inject a SKELETON MODE header before the final line
   const base = buildPrompt(topic, depth);
   const insertBefore = 'NOW OUTPUT THE NCF JSON FOR:';
-  const skeletonMode = `GENERATION MODE: SKELETON ONLY (Part 1 of 3)
+  const skeletonMode = `GENERATION MODE: SKELETON ONLY (Part 1 of ${totalParts})
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 COGNITIVE BUDGET STRATEGY — READ BEFORE GENERATING:
 
-  This is a 3-part generation. You are doing Part 1: STRUCTURE ONLY.
+  This is a ${totalParts}-part generation. You are doing Part 1: STRUCTURE ONLY.
 
   OUTPUT THE COMPLETE SKELETON:
   → All node rows: id, label, cat, hot, dl, prereq — COMPLETE
   → desc column: write the 1-sentence mentor-style description for every node
-  → info column: output exactly "" (empty string) — content comes in Parts 2 & 3
+  → info column: output exactly "" (empty string) — content comes in ${later}
   → analogy column: output null
   → All links: complete
   → Full learning path: complete (order, phase, reason, estimatedMinutes, keyInsight)
@@ -391,15 +396,11 @@ COGNITIVE BUDGET STRATEGY — READ BEFORE GENERATING:
   return base.replace(insertBefore, skeletonMode + insertBefore);
 }
 
-export function buildEnrichPrompt(topic, depth, skeletonData, batchNum) {
-  // Sort nodes by learning path order for coherent batching
-  const lpOrder = new Map(skeletonData.learningPath.map(s => [s.nodeId, s.order]));
-  const sorted = [...skeletonData.nodes].sort((a, b) =>
-    (lpOrder.get(a.id) ?? 999) - (lpOrder.get(b.id) ?? 999)
-  );
-  const mid = Math.ceil(sorted.length / 2);
-  const thisBatch = batchNum === 1 ? sorted.slice(0, mid) : sorted.slice(mid);
-  const otherBatch = batchNum === 1 ? sorted.slice(mid) : sorted.slice(0, mid);
+export function buildEnrichPrompt(topic, depth, skeletonData, batchNum, totalBatches = 2) {
+  // Nodes sorted by learning path order and split in half (shared with the import validator)
+  const { sorted, batch1, batch2 } = splitBatches(skeletonData, totalBatches);
+  const thisBatch = batchNum === 1 ? batch1 : batch2;
+  const otherBatch = batchNum === 1 ? batch2 : batch1;
 
   // Compact full node list (context, ~50 chars per node)
   const allNodesList = skeletonData.nodes
@@ -416,25 +417,25 @@ export function buildEnrichPrompt(topic, depth, skeletonData, batchNum) {
   }).join('\n\n');
 
   const otherList = otherBatch.map(n => `  ${n.id}`).join(' · ');
-  const topicSlug = topic.toLowerCase().replace(/[^a-z0-9]+/g,'_').substring(0,25);
+  const otherBlock = totalBatches > 1
+    ? `\n\nNodes being enriched in the OTHER batch (do NOT include these in your output):\n${otherList}`
+    : '';
+  const slug = topicSlug(topic);
 
   return `╔══════════════════════════════════════════════════════════════════════════════════╗
-║           NEURON — CONTENT ENRICHMENT  (Part ${batchNum + 1} of 3 · Batch ${batchNum} of 2)              ║
+║           NEURON — CONTENT ENRICHMENT  (Part ${batchNum + 1} of ${totalBatches + 1} · Batch ${batchNum} of ${totalBatches})              ║
 ╚══════════════════════════════════════════════════════════════════════════════════╝
 
 TOPIC:  ${topic}
 DEPTH:  ${depth}
-BATCH:  ${batchNum} of 2 — enriching ${thisBatch.length} of ${sorted.length} nodes
+BATCH:  ${batchNum} of ${totalBatches} — enriching ${thisBatch.length} of ${sorted.length} nodes
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 CONTEXT — THE FULL MAP YOU PLANNED IN PART 1:
 
 All ${skeletonData.nodes.length} nodes (for cross-referencing — name them in your prose):
-${allNodesList}
-
-Nodes being enriched in the OTHER batch (do NOT include these in your output):
-${otherList}
+${allNodesList}${otherBlock}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -464,7 +465,7 @@ OUTPUT FORMAT — NCE (Neuron Content Enrichment):
 
   {
     "_nce": "1",
-    "_id": "${topicSlug}_${depth}",
+    "_id": "${slug}_${depth}",
     "batch": ${batchNum},
     "E_cols": ["ni","desc","info","analogy"],
     "E": [

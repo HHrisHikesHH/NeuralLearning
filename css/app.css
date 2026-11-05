@@ -82,6 +82,10 @@ dialog.dlg-wide { width: min(680px, calc(100vw - 32px)); }
 .llm-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; color: var(--text-3); font-size: var(--fs-sm); }
 .schema-box { margin-top: var(--sp-2); }
 .mp-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-4); }
+.mp-grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.parts-head { gap: var(--sp-2); }
+.parts-line { font-size: var(--fs-sm); color: var(--text-2); }
+.parts-line.is-ready { color: var(--green); }
 .mp-slot { display: grid; gap: var(--sp-3); align-content: start; }
 .mp-slot[aria-disabled="true"] { opacity: 0.5; }
 .mp-slot-head { display: flex; align-items: center; gap: var(--sp-3); }
@@ -90,6 +94,13 @@ dialog.dlg-wide { width: min(680px, calc(100vw - 32px)); }
 .mp-slot.is-done .mp-badge { border-color: var(--green); color: var(--green); background: rgba(105, 240, 174, 0.08); }
 .mp-slot .prompt-box { max-height: 160px; }
 .mp-slot .textarea { min-height: 110px; }
+.mp-slot.is-err .mp-badge { border-color: var(--red); color: #ffd4d4; background: rgba(255, 107, 107, 0.08); }
+.seg { justify-self: start; display: inline-grid; grid-template-columns: repeat(2, minmax(0, max-content)); gap: 4px; padding: 4px; border: 1px solid var(--border-2); border-radius: var(--r-md); background: var(--surface-2); max-width: 100%; }
+.seg-opt { min-height: 36px; padding: 6px var(--sp-4); border-radius: var(--r-sm); font-size: var(--fs-sm); font-weight: 600; line-height: 1.3; color: var(--text-2); }
+.seg-opt:hover { color: var(--text); }
+.seg-opt[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent-line); }
+.issue-list { margin: var(--sp-2) 0 0 var(--sp-4); display: grid; gap: 4px; word-break: break-word; }
+details.notice > summary { cursor: pointer; font-weight: 600; }
 
 /* Map screen actions */
 .save-state { font-size: var(--fs-sm); color: var(--text-3); white-space: nowrap; }
@@ -111,6 +122,8 @@ dialog.dlg-wide { width: min(680px, calc(100vw - 32px)); }
   .mp-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 768px) {
+  .seg { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+  .seg-opt { padding: 6px var(--sp-2); }
   .page { padding: 84px var(--sp-4) var(--sp-6); }
   .shell { padding: var(--sp-2) var(--sp-4); padding-top: max(var(--sp-2), env(safe-area-inset-top)); }
   .shell .btn-label { display: none; }
