@@ -9,5 +9,11 @@ class NoCacheHandler(http.server.SimpleHTTPRequestHandler):
         super().end_headers()
 
 
+class Server(http.server.ThreadingHTTPServer):
+    # The default listen backlog (5) resets connections when a browser loads many ES modules at
+    # once, which made parallel browser tests flaky.
+    request_queue_size = 128
+
+
 port = int(sys.argv[1]) if len(sys.argv) > 1 else 8000
-http.server.ThreadingHTTPServer(("127.0.0.1", port), NoCacheHandler).serve_forever()
+Server(("127.0.0.1", port), NoCacheHandler).serve_forever()

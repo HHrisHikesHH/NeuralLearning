@@ -153,10 +153,21 @@ Then open:
 - `http://127.0.0.1:8000/view.html?s=TestShareId0000000000A` for the viewer with a sample share
   (`MaliciousShare0000000B` loads an XSS test fixture)
 
-Run the tests (Node 20+, no dependencies):
+Run the tests (Node 22+). The unit and integration tests need no dependencies:
 
 ```bash
 node --test tests/
+```
+
+The syntax check and the browser tests use the dev tooling in `package.json` (Playwright only;
+the app itself has no runtime dependencies):
+
+```bash
+npm ci
+npx playwright install chromium
+npm run check      # every .js / .mjs file parses
+npm test           # same as node --test tests/
+npm run test:e2e   # e2e/*.spec.mjs: the owner app against the fake GitHub, plus the viewer
 ```
 
 They cover NCF/legacy parsing and validation, malicious input, encryption (tampering, AAD, IV
@@ -165,6 +176,39 @@ uniqueness, wrong secrets, passphrase change, recovery), the vault against a fak
 sharing (escaping, publish, unpublish, reconcile).
 
 `tests/render-og.html` regenerates `assets/og-default.jpg` (screenshot it at 1200×630).
+
+---
+
+## Continuous integration
+
+`.github/workflows/ci.yml` runs on every pull request to `main` and every push to `main`:
+
+| Check | What it runs |
+|---|---|
+| `unit (22)`, `unit (24)`, `unit (26)` | `npm ci`, `npm run check`, `npm test` on each Node version |
+| `e2e` | `npm ci`, Playwright Chromium, `npm run test:e2e` |
+
+- **No secrets.** CI never sees the Neuron GitHub token. The vault and sharing tests run against
+  in-memory and in-browser fakes of the GitHub API. The browser tests also abort any request to
+  the real `api.github.com` or `hhrishikeshh.github.io` and fail if one is attempted. The workflow
+  token is read-only (`contents: read`), checkout does not keep credentials, and it uses
+  `pull_request` (not `pull_request_target`), so code from a pull request never runs with
+  privileges.
+- Actions are first-party and pinned to full commit SHAs. Dependencies install from
+  `package-lock.json` with install scripts disabled.
+- **Results:** the pull request's *Checks* section, or the repository's *Actions* tab. When `e2e`
+  fails, download the `playwright-report` artifact from the run and open `index.html`, or run
+  `npx playwright show-trace` on a trace inside it.
+- **The browser tests use the network** for D3 (loaded from cdnjs with SRI, as in production).
+  Fonts are blocked in tests. CI retries a failed browser test once.
+
+**Make the checks required before merging** (manual, one time): repository **Settings → Rules →
+Rulesets → New ruleset → New branch ruleset**. Name it, set *Enforcement status* to **Active**,
+add the target **Include default branch**, tick **Require status checks to pass**, add `unit (22)`,
+`unit (24)`, `unit (26)` and `e2e` (they appear after the workflow has run once), and optionally
+tick **Require a pull request before merging**. Save. On the older page (**Settings → Branches →
+Add branch protection rule** for `main`), the same options are under "Require status checks to pass
+before merging".
 
 ---
 
@@ -183,6 +227,9 @@ js/viewer/viewer.js        public read-only viewer (imports no owner code)
 js/owner/                  app.js (router)  session.js  crypto.js  github.js  vault.js
                            shares.js  share-page.js  og-image.js  ui.js  screens/*.js
 tests/                     node tests, fake GitHub, e2e harness, fixtures
+e2e/                       Playwright browser tests (run against tests/e2e.html)
+scripts/check-syntax.mjs   syntax check used by CI
+.github/workflows/ci.yml   CI: unit tests on Node 22/24/26, browser tests
 ```
 
 ## Data formats
