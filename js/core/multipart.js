@@ -1,15 +1,19 @@
-// Researcher three-part maps: Skeleton (NCF, info left empty) + Data Part 1 and Data Part 2
-// (NCE enrichment batches). This module validates each part on its own, cross-checks the parts
-// against each other, and assembles them into one map that has been through the same
-// validation and sanitising pipeline as any single complete NCF map.
+// Multi-part maps: a Skeleton (NCF, info left empty) plus NCE data parts — one for Practitioner,
+// two (Data Part 1 and Data Part 2) for Researcher; see modes.js. This module validates each part
+// on its own, cross-checks the parts against each other, and assembles them into one map that has
+// been through the same validation and sanitising pipeline as any single complete NCF map.
+// assembleParts() is the single entry point for all depths: Explorer's one response goes through
+// the existing single-map loader unchanged.
 //
 // The formats and the merge semantics are the historical ones (see buildSkeletonPrompt,
 // buildEnrichPrompt, parseNCE and mergeEnrichment). This layer adds the strictness: nothing is
 // silently dropped, overwritten or de-duplicated, and every message names the part it is about.
 
-import { LIMITS, stripFences, parseNCF, validateSchema, sanitizeMap, mergeEnrichment, toNCF, loadMapFromObject } from './ncf.js';
+import { LIMITS, stripFences, parseNCF, validateSchema, sanitizeMap, mergeEnrichment, toNCF, loadMapFromObject, loadMapFromText } from './ncf.js';
+import { MODES, modeFor } from './modes.js';
 
 export const PART_LABELS = Object.freeze({ 0: 'Skeleton', 1: 'Data Part 1', 2: 'Data Part 2' });
+const labelsFor = (batches) => (batches === 1 ? MODES.practitioner.labels : MODES.researcher.labels);
 
 const NCF_KEYS = new Set(['_ncf', 'topic', 'depth', 'summary', 'categories', 'N_cols', 'N', 'L_cols', 'L', 'LP_cols', 'LP', 'meta']);
 const LEGACY_KEYS = new Set(['topic', 'depth', 'summary', 'categories', 'nodes', 'links', 'learningPath', 'metadata']);
@@ -27,12 +31,13 @@ export function topicSlug(topic) {
 
 /**
  * The historical batch split: skeleton nodes sorted by learning-path order (nodes that are not
- * on the path go last, in their original order), then cut at ceil(n / 2).
+ * on the path go last, in their original order), then cut at ceil(n / 2). With count = 1
+ * (Practitioner) every node is in batch1.
  */
-export function splitBatches(skeleton) {
+export function splitBatches(skeleton, count = 2) {
   const lpOrder = new Map(skeleton.learningPath.map((s) => [s.nodeId, s.order]));
   const sorted = [...skeleton.nodes].sort((a, b) => (lpOrder.get(a.id) ?? 999) - (lpOrder.get(b.id) ?? 999));
-  const mid = Math.ceil(sorted.length / 2);
+  const mid = count === 1 ? sorted.length : Math.ceil(sorted.length / 2);
   return { sorted, batch1: sorted.slice(0, mid), batch2: sorted.slice(mid) };
 }
 
@@ -67,8 +72,9 @@ function duplicates(values) {
  * Validate the Skeleton (Part 1 of 3). Returns the sanitised map when valid.
  * @returns {{ ok: boolean, missing?: boolean, map: object|null, errors: string[], warnings: string[] }}
  */
-export function checkSkeleton(text) {
+export function checkSkeleton(text, { batches = 2, depth = 'researcher' } = {}) {
   const L = PART_LABELS[0];
+  const labels = labelsFor(batches);
   const p = parsePart(text, L);
   if (!p.value) return { ok: false, missing: !!p.missing, map: null, errors: p.errors, warnings: [] };
   const v = p.value;
@@ -77,7 +83,7 @@ export function checkSkeleton(text) {
 
   if (v._nce != null || Array.isArray(v.E)) {
     const n = Number(v.batch);
-    return { ok: false, map: null, warnings, errors: [`${L}: this looks like an enrichment response (NCE), not the skeleton — paste it into ${n === 1 || n === 2 ? PART_LABELS[n] : 'Data Part 1 or 2'}.`] };
+    return { ok: false, map: null, warnings, errors: [`${L}: this looks like an enrichment response (NCE), not the skeleton — paste it into ${n >= 1 && n <= batches ? labels[n] : batches === 1 ? labels[1] : 'Data Part 1 or 2'}.`] };
   }
 
   const known = v._ncf ? NCF_KEYS : LEGACY_KEYS;
@@ -105,7 +111,7 @@ export function checkSkeleton(text) {
   if (selfLinks) warnings.push(`${L}: ${selfLinks} link(s) connect a concept to itself and will not be drawn.`);
   const dupSteps = duplicates(expanded.learningPath.map((s) => String(s.nodeId)));
   if (dupSteps.length) warnings.push(`${L}: concepts repeated in the learning path ${listIds(dupSteps)}.`);
-  if (String(expanded.depth).toLowerCase() !== 'researcher') warnings.push(`${L}: depth is "${expanded.depth}", not "researcher".`);
+  if (String(expanded.depth).toLowerCase() !== depth) warnings.push(`${L}: depth is "${expanded.depth}", not "${depth}".`);
 
   return { ok: true, map: sanitizeMap(expanded), errors, warnings };
 }
@@ -115,9 +121,10 @@ export function checkSkeleton(text) {
  * Pass the validated skeleton map to cross-check concept ids and the batch split.
  * @returns {{ ok: boolean, missing?: boolean, nce: object|null, ids: string[], errors: string[], warnings: string[] }}
  */
-export function checkEnrichment(text, { part, skeleton = null, expectedId = null } = {}) {
-  const L = PART_LABELS[part];
-  if (!L || part === 0) throw new Error('checkEnrichment: part must be 1 or 2');
+export function checkEnrichment(text, { part, batches = 2, skeleton = null, expectedId = null } = {}) {
+  const labels = labelsFor(batches);
+  const L = labels[part];
+  if (!L || part < 1 || part > batches) throw new Error(`checkEnrichment: part must be 1–${batches}`);
   const p = parsePart(text, L);
   const fail = (errors, warnings = []) => ({ ok: false, missing: !!p.missing, nce: null, ids: [], errors, warnings });
   if (!p.value) return fail(p.errors);
@@ -131,7 +138,7 @@ export function checkEnrichment(text, { part, skeleton = null, expectedId = null
   if (v.batch == null) warnings.push(`${L}: no "batch" field — assuming batch ${part}.`);
   else if (Number(v.batch) !== part) {
     const other = Number(v.batch);
-    return fail([`${L}: this response says "batch": ${JSON.stringify(v.batch)}` + (other === 1 || other === 2 ? ` — paste it into ${PART_LABELS[other]}.` : ' — expected 1 or 2.')]);
+    return fail([`${L}: this response says "batch": ${JSON.stringify(v.batch)}` + (other >= 1 && other <= batches ? ` — paste it into ${labels[other]}.` : batches === 1 ? ' — expected 1.' : ' — expected 1 or 2.')]);
   }
 
   const extra = Object.keys(v).filter((k) => !NCE_KEYS.has(k));
@@ -181,7 +188,7 @@ export function checkEnrichment(text, { part, skeleton = null, expectedId = null
     if (unknown.length) errors.push(`${L}: ${unknown.length} concept id(s) do not exist in the skeleton: ${listIds(unknown)}.`);
     const want = expectedId ?? `${topicSlug(skeleton.topic)}_${skeleton.depth}`;
     if (v._id != null && String(v._id) !== want) warnings.push(`${L}: "_id" is "${v._id}", expected "${want}" — check this batch belongs to this map.`);
-    const expected = new Set(splitBatches(skeleton)[part === 1 ? 'batch1' : 'batch2'].map((n) => n.id));
+    const expected = new Set(splitBatches(skeleton, batches)[part === 1 ? 'batch1' : 'batch2'].map((n) => n.id));
     const outside = ids.filter((id) => known.has(id) && !expected.has(id));
     if (outside.length) warnings.push(`${L}: ${outside.length} concept(s) belong to the other batch in the standard split: ${listIds(outside, 6)}.`);
   }
@@ -192,58 +199,100 @@ export function checkEnrichment(text, { part, skeleton = null, expectedId = null
 const sameEntry = (a, b) => a.description === b.description && a.additionalInfo === b.additionalInfo && (a.analogy ?? null) === (b.analogy ?? null);
 
 /**
- * Validate and combine Skeleton + Data Part 1 + Data Part 2 (merged in that order).
+ * Validate and combine a skeleton with its data parts, merged in order (skeleton → Part 1 → Part 2).
+ * texts: [skeleton, dataPart1, (dataPart2)] — `batches` is the number of data parts (1 or 2).
  *
- * requireComplete: true  → all three parts must be present and every concept must end up with
- *                          an explanation (manual import).
+ * requireComplete: true  → every part must be present and every concept must end up with an
+ *                          explanation (manual import).
  * requireComplete: false → only the skeleton is required; absent parts are reported as warnings
  *                          with the concepts that still lack explanations (progressive generation).
  * A part that is present but invalid always blocks assembly.
  */
-export function assembleResearcherMap({ skeleton, part1, part2 }, { requireComplete = true, expectedId = null } = {}) {
-  const sk = checkSkeleton(skeleton);
+function assembleSkeletonParts(texts, { batches, depth, requireComplete = true, expectedId = null }) {
+  const labels = labelsFor(batches);
+  const sk = checkSkeleton(texts[0], { batches, depth });
   const base = sk.ok ? sk.map : null;
-  const p = [null, checkEnrichment(part1, { part: 1, skeleton: base, expectedId }), checkEnrichment(part2, { part: 2, skeleton: base, expectedId })];
-  const parts = { skeleton: sk, part1: p[1], part2: p[2] };
-  const errors = [];
+  const data = [];
+  for (let i = 1; i <= batches; i++) data.push(checkEnrichment(texts[i], { part: i, batches, skeleton: base, expectedId }));
+  const parts = [sk, ...data];
+  const errors = [...sk.errors];
   const warnings = [...sk.warnings];
-  errors.push(...sk.errors);
-  for (const i of [1, 2]) {
-    warnings.push(...p[i].warnings);
-    if (p[i].missing && !requireComplete) continue;
-    errors.push(...p[i].errors);
+  for (const d of data) {
+    warnings.push(...d.warnings);
+    if (d.missing && !requireComplete) continue;
+    errors.push(...d.errors);
   }
   const total = base ? base.nodes.length : 0;
   const result = (extra) => ({ ok: false, map: null, parts, errors, warnings, enriched: 0, total, missing: [], ...extra });
   if (!base) return result();
 
   // Cross-part checks only make sense between parts that are individually valid.
-  const a = p[1].ok ? p[1].nce : null;
-  const b = p[2].ok ? p[2].nce : null;
+  const nces = data.map((d) => (d.ok ? d.nce : null));
+  const [a, b] = nces;
   if (a && b) {
     const conflicts = [];
     const same = [];
     for (const id of Object.keys(a)) if (id in b) (sameEntry(a[id], b[id]) ? same : conflicts).push(id);
-    if (conflicts.length) errors.push(`Conflict: ${conflicts.length} concept(s) appear in both Data Part 1 and Data Part 2 with different content: ${listIds(conflicts)}. Remove them from one part.`);
+    if (conflicts.length) errors.push(`Conflict: ${conflicts.length} concept(s) appear in both ${labels[1]} and ${labels[2]} with different content: ${listIds(conflicts)}. Remove them from one part.`);
     if (same.length) warnings.push(`${same.length} concept(s) appear identically in both data parts: ${listIds(same, 6)}.`);
   }
 
-  const covered = new Set([...(a ? Object.keys(a) : []), ...(b ? Object.keys(b) : [])]);
+  const covered = new Set(nces.flatMap((n) => (n ? Object.keys(n) : [])));
   const missing = base.nodes.filter((n) => !covered.has(n.id) && !n.additionalInfo.trim()).map((n) => n.id);
   const enriched = total - missing.length;
   if (missing.length) {
-    const msg = `${missing.length} of ${total} concept(s) have no explanation in either data part: ${listIds(missing)}.`;
+    const where = batches === 1 ? 'the data part' : 'either data part';
+    const msg = `${missing.length} of ${total} concept(s) have no explanation in ${where}: ${listIds(missing)}.`;
     if (requireComplete) errors.push(msg); else warnings.push(msg);
   }
   if (errors.length) return result({ enriched, missing });
 
-  // Merge in order (skeleton → Part 1 → Part 2), then run the result through the full single-map
-  // pipeline so it is indistinguishable from one complete NCF paste.
-  const merged = mergeEnrichment(base, a, b);
+  // Merge in order, then run the result through the full single-map pipeline so it is
+  // indistinguishable from one complete NCF paste.
+  const merged = mergeEnrichment(base, ...nces);
   const final = loadMapFromObject(toNCF(merged));
   if (!final.ok) {
     errors.push(...final.errors.map((e) => `Assembled map: ${e}`));
     return result({ enriched, missing });
   }
   return { ok: true, map: final.data, parts, errors, warnings, enriched, total, missing };
+}
+
+/** Explorer: one complete map, through the existing single-map loader (unchanged behaviour). */
+function assembleSingle(text, label) {
+  const raw = typeof text === 'string' ? text : '';
+  const part = (ok, extra) => ({ ok, missing: false, map: null, errors: [], warnings: [], ...extra });
+  if (!raw.trim()) {
+    const errors = [`${label} is missing — paste the complete JSON response.`];
+    return { ok: false, map: null, parts: [part(false, { missing: true, errors })], errors, warnings: [], enriched: 0, total: 0, missing: [] };
+  }
+  const r = loadMapFromText(raw);
+  if (!r.ok) {
+    let errors = r.errors.map((e) => `${label}: ${e}`);
+    if (r.kind === 'json' && !/[}\]]\s*$/.test(stripFences(raw))) {
+      errors = [errors[0] + ' The response looks cut off before the end — ask the AI to continue from where it stopped, or regenerate it.'];
+    }
+    return { ok: false, map: null, parts: [part(false, { errors })], errors, warnings: [], enriched: 0, total: 0, missing: [] };
+  }
+  const total = r.data.nodes.length;
+  return { ok: true, map: r.data, parts: [part(true, { map: r.data })], errors: [], warnings: [], enriched: total, total, missing: [] };
+}
+
+/**
+ * One entry point for every depth. `texts` holds one string per part, in order
+ * (Explorer: [map]; Practitioner: [skeleton, data]; Researcher: [skeleton, data1, data2]).
+ * Returns { ok, map, parts[], errors, warnings, enriched, total, missing }.
+ * `parts[i]` is that part's own result ({ ok, missing, errors, warnings, … }).
+ */
+export function assembleParts(depth, texts, { requireComplete = true, expectedId = null } = {}) {
+  const mode = modeFor(depth);
+  const t = Array.from({ length: mode.parts }, (_, i) => (texts && typeof texts[i] === 'string' ? texts[i] : ''));
+  if (mode.parts === 1) return assembleSingle(t[0], mode.labels[0]);
+  return assembleSkeletonParts(t, { batches: mode.batches, depth: MODES[depth] ? depth : 'researcher', requireComplete, expectedId });
+}
+
+/** Researcher three-part assembly (kept for existing callers and tests). */
+export function assembleResearcherMap({ skeleton, part1, part2 }, opts = {}) {
+  const r = assembleParts('researcher', [skeleton, part1, part2], opts);
+  return { ...r, parts: { skeleton: r.parts[0], part1: r.parts[1], part2: r.parts[2] } };
 }
